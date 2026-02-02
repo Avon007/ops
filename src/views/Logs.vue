@@ -1,4 +1,15 @@
 <script setup lang="ts">
+/**
+ * Logs View
+ * 系统日志页面
+ *
+ * 优化内容:
+ * 1. 使用 Pinia store 管理日志状态
+ * 2. 使用 composables 提取辅助逻辑
+ * 3. 简化组件，提高可维护性
+ * 4. 遵循 Vue 3 Composition API 最佳实践
+ */
+
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import {
@@ -17,103 +28,36 @@ import {
   Clock
 } from 'lucide-vue-next'
 
+// Store
+import { useLogsStore } from '@/stores/logs'
+
+// Composables
+import { useLogHelpers } from '@/composables/useLogHelpers'
+
 const router = useRouter()
 
-// Filter options
-const logLevels = ref(['All', 'Error', 'Warning', 'Info', 'Debug'])
+// Store
+const logsStore = useLogsStore()
+
+// Composables
+const {
+  getLevelIcon,
+  getLevelClass,
+  getLevelBgColor,
+  formatTimestamp,
+  getLogLevels,
+  getTimeRanges
+} = useLogHelpers()
+
+// State
+const logLevels = ref(getLogLevels())
 const selectedLevel = ref('All')
 const searchQuery = ref('')
 const selectedTimeRange = ref('Last 24h')
 
-// Mock log data
-const logs = ref([
-  {
-    id: 1,
-    timestamp: '2026-01-29 14:32:15',
-    level: 'error',
-    service: 'api-service',
-    message: 'Connection timeout to database server',
-    details: 'Error: ETIMEDOUT at Connection.connect (net.js:123:45)'
-  },
-  {
-    id: 2,
-    timestamp: '2026-01-29 14:31:42',
-    level: 'warning',
-    service: 'frontend-v2',
-    message: 'High memory usage detected',
-    details: 'Memory usage at 85%, consider scaling up'
-  },
-  {
-    id: 3,
-    timestamp: '2026-01-29 14:30:28',
-    level: 'info',
-    service: 'auth-service',
-    message: 'User login successful',
-    details: 'User ID: 12345, IP: 192.168.1.100'
-  },
-  {
-    id: 4,
-    timestamp: '2026-01-29 14:29:15',
-    level: 'error',
-    service: 'payment-gateway',
-    message: 'Payment processing failed',
-    details: 'Transaction ID: txn_789xyz, Error: Invalid card format'
-  },
-  {
-    id: 5,
-    timestamp: '2026-01-29 14:28:33',
-    level: 'debug',
-    service: 'api-service',
-    message: 'API request received',
-    details: 'GET /api/v1/users?page=1&limit=10'
-  },
-  {
-    id: 6,
-    timestamp: '2026-01-29 14:27:21',
-    level: 'info',
-    service: 'deployment-service',
-    message: 'Deployment completed successfully',
-    details: 'frontend-v2.4.1 deployed to production'
-  },
-  {
-    id: 7,
-    timestamp: '2026-01-29 14:26:18',
-    level: 'warning',
-    service: 'cache-service',
-    message: 'Cache miss rate increasing',
-    details: 'Current miss rate: 45%, threshold: 40%'
-  },
-  {
-    id: 8,
-    timestamp: '2026-01-29 14:25:05',
-    level: 'info',
-    service: 'background-worker',
-    message: 'Job completed',
-    details: 'Report generation completed in 2.3s'
-  },
-  {
-    id: 9,
-    timestamp: '2026-01-29 14:24:12',
-    level: 'error',
-    service: 'email-service',
-    message: 'Failed to send email',
-    details: 'SMTP Error: Connection refused'
-  },
-  {
-    id: 10,
-    timestamp: '2026-01-29 14:23:45',
-    level: 'debug',
-    service: 'api-service',
-    message: 'Database query executed',
-    details: 'SELECT * FROM users WHERE active = true (23ms)'
-  }
-])
-
-const selectedLog = ref<typeof logs.value[0] | null>(null)
-
 // Computed
 const filteredLogs = computed(() => {
-  return logs.value.filter(log => {
+  return logsStore.logs.filter(log => {
     const matchesLevel = selectedLevel.value === 'All' || log.level === selectedLevel.value.toLowerCase()
     const matchesSearch = searchQuery.value === '' ||
       log.message.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -122,50 +66,29 @@ const filteredLogs = computed(() => {
   })
 })
 
-const stats = computed(() => {
-  return {
-    total: logs.value.length,
-    errors: logs.value.filter(l => l.level === 'error').length,
-    warnings: logs.value.filter(l => l.level === 'warning').length,
-    info: logs.value.filter(l => l.level === 'info').length,
-    debug: logs.value.filter(l => l.level === 'debug').length
-  }
-})
+const stats = computed(() => logsStore.stats)
 
 // Methods
 const goToDashboard = () => {
   router.push('/')
 }
 
-const getLevelIcon = (level: string) => {
-  switch (level) {
-    case 'error':
-      return AlertCircle
-    case 'warning':
-      return AlertTriangle
-    case 'info':
-      return Info
-    case 'debug':
-      return CheckCircle
-    default:
-      return Info
-  }
+const clearFilters = () => {
+  selectedLevel.value = 'All'
+  searchQuery.value = ''
+  selectedTimeRange.value = 'Last 24h'
 }
 
-const getLevelClass = (level: string) => {
-  return `log-level-${level}`
-}
-
-const refreshLogs = () => {
-  console.log('Refreshing logs...')
+const refreshLogs = async () => {
+  await logsStore.refreshLogs()
 }
 
 const exportLogs = () => {
-  console.log('Exporting logs...')
+  logsStore.exportLogs('json')
 }
 
-const viewLogDetails = (log: typeof logs.value[0]) => {
-  selectedLog.value = log
+const viewLogDetails = (logId: number) => {
+  logsStore.setSelectedLog(logId)
 }
 </script>
 
@@ -239,13 +162,15 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
       <div class="filter-group">
         <Clock :size="16" class="filter-icon" />
         <select v-model="selectedTimeRange" class="filter-select">
-          <option>Last 15m</option>
-          <option>Last 1h</option>
-          <option selected>Last 24h</option>
-          <option>Last 7d</option>
-          <option>Custom</option>
+          <option v-for="range in getTimeRanges()" :key="range" :value="range">
+            {{ range }}
+          </option>
         </select>
       </div>
+
+      <button class="clear-filters-btn" @click="clearFilters">
+        清除筛选
+      </button>
     </div>
 
     <!-- Logs Table -->
@@ -264,6 +189,7 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
           <tr
             v-for="log in filteredLogs"
             :key="log.id"
+            v-memo="[log.id, log.level]"
             :class="[getLevelClass(log.level)]"
             class="log-row"
           >
@@ -271,7 +197,7 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
               {{ log.timestamp }}
             </td>
             <td class="log-level">
-              <span :class="['level-badge', getLevelClass(log.level)]">
+              <span :class="['level-badge', getLevelClass(log.level)]" :style="{ backgroundColor: getLevelBgColor(log.level) }">
                 <component :is="getLevelIcon(log.level)" :size="14" />
                 {{ log.level.toUpperCase() }}
               </span>
@@ -281,7 +207,7 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
             <td class="log-actions">
               <button
                 class="view-btn"
-                @click="viewLogDetails(log)"
+                @click="viewLogDetails(log.id)"
               >
                 View Details
               </button>
@@ -301,34 +227,34 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
     </div>
 
     <!-- Log Details Modal -->
-    <div v-if="selectedLog" class="modal-overlay" @click="selectedLog = null">
+    <div v-if="logsStore.selectedLog" class="modal-overlay" @click="logsStore.setSelectedLog(null)">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h2>Log Details</h2>
-          <button class="close-btn" @click="selectedLog = null">×</button>
+          <button class="close-btn" @click="logsStore.setSelectedLog(null)">×</button>
         </div>
         <div class="modal-body">
           <div class="detail-row">
             <span class="detail-label">Timestamp:</span>
-            <span class="detail-value">{{ selectedLog.timestamp }}</span>
+            <span class="detail-value">{{ logsStore.selectedLog.timestamp }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Level:</span>
-            <span :class="['detail-value', 'level-badge', getLevelClass(selectedLog.level)]">
-              {{ selectedLog.level.toUpperCase() }}
+            <span :class="['detail-value', 'level-badge', getLevelClass(logsStore.selectedLog.level)]" :style="{ backgroundColor: getLevelBgColor(logsStore.selectedLog.level) }">
+              {{ logsStore.selectedLog.level.toUpperCase() }}
             </span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Service:</span>
-            <span class="detail-value">{{ selectedLog.service }}</span>
+            <span class="detail-value">{{ logsStore.selectedLog.service }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Message:</span>
-            <span class="detail-value">{{ selectedLog.message }}</span>
+            <span class="detail-value">{{ logsStore.selectedLog.message }}</span>
           </div>
           <div class="detail-row full">
             <span class="detail-label">Details:</span>
-            <pre class="detail-value code">{{ selectedLog.details }}</pre>
+            <pre class="detail-value code">{{ logsStore.selectedLog.details }}</pre>
           </div>
         </div>
       </div>
@@ -441,12 +367,12 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
 
 /* Stats Grid */
 .stats-grid {
-  display: flex;
-  gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
 }
 
 .stat-card {
-  flex: 1;
   border: 1px solid var(--border-light);
   padding: 28px;
   display: flex;
@@ -483,6 +409,8 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
 .filters-bar {
   display: flex;
   gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .filter-group {
@@ -515,6 +443,23 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
   background: transparent;
   cursor: pointer;
   color: var(--text-main);
+}
+
+.clear-filters-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-white);
+  color: var(--text-main);
+  font-size: 13px;
+  font-family: var(--font-family);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+  background-color: var(--bg-elevated);
+  border-color: var(--primary-green);
 }
 
 /* Logs Table */
@@ -571,26 +516,6 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
   font-size: var(--font-size-caption-2);
   font-weight: 500;
   border-radius: var(--border-radius-sm);
-}
-
-.log-level-error .level-badge {
-  background-color: var(--status-error-bg);
-  color: var(--status-error);
-}
-
-.log-level-warning .level-badge {
-  background-color: #FFF3E0;
-  color: var(--status-warning);
-}
-
-.log-level-info .level-badge {
-  background-color: #E3F2FD;
-  color: var(--status-info);
-}
-
-.log-level-debug .level-badge {
-  background-color: var(--accent-light);
-  color: var(--status-success);
 }
 
 .log-row:hover {
@@ -739,5 +664,21 @@ const viewLogDetails = (log: typeof logs.value[0]) => {
   font-size: var(--font-size-caption-1);
   white-space: pre-wrap;
   word-break: break-all;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
 }
 </style>

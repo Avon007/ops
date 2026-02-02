@@ -44,6 +44,9 @@ export { useTracingHelpers } from './useTracingHelpers'
 // Deployments
 export { useDeploymentHelpers } from './useDeploymentHelpers'
 
+// Logs
+export { useLogHelpers } from './useLogHelpers'
+
 // 类型导出
 export type { DeploymentStatus } from './useDeployment'
 export type { TerminalMessage } from './useTerminalState'

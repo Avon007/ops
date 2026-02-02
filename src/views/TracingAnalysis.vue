@@ -327,6 +327,7 @@ const toggleTrace = (traceId: string) => {
   color: var(--text-gray);
   margin: 0;
   font-family: var(--font-family);
+  white-space: nowrap;
 }
 
 /* Stats Grid */

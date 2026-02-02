@@ -112,38 +112,38 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
     <div class="stats-grid">
       <div class="stat-card stat-active">
         <div class="stat-header">
-          <span class="stat-label">Active Alerts</span>
+          <span class="stat-label">活跃告警</span>
           <Bell :size="20" class="stat-icon" />
         </div>
         <div class="stat-value">{{ stats.total }}</div>
-        <div class="stat-change">Requires attention</div>
+        <div class="stat-change">需要关注</div>
       </div>
 
       <div class="stat-card stat-critical">
         <div class="stat-header">
-          <span class="stat-label">Critical</span>
+          <span class="stat-label">严重</span>
           <AlertCircle :size="20" class="stat-icon" />
         </div>
         <div class="stat-value">{{ stats.critical }}</div>
-        <div class="stat-change">Immediate action needed</div>
+        <div class="stat-change">需要立即处理</div>
       </div>
 
       <div class="stat-card stat-high">
         <div class="stat-header">
-          <span class="stat-label">High Priority</span>
+          <span class="stat-label">高优先级</span>
           <AlertTriangle :size="20" class="stat-icon" />
         </div>
         <div class="stat-value">{{ stats.high }}</div>
-        <div class="stat-change">Urgent attention</div>
+        <div class="stat-change">紧急关注</div>
       </div>
 
       <div class="stat-card stat-resolved">
         <div class="stat-header">
-          <span class="stat-label">Resolved Today</span>
+          <span class="stat-label">今日已解决</span>
           <CheckCircle :size="20" class="stat-icon" />
         </div>
         <div class="stat-value">{{ stats.resolved }}</div>
-        <div class="stat-change">Successfully handled</div>
+        <div class="stat-change">已成功处理</div>
       </div>
     </div>
 
@@ -154,7 +154,7 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search alerts..."
+          placeholder="搜索告警..."
           class="search-input"
         />
       </div>
@@ -163,7 +163,7 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
         <Filter :size="16" class="filter-icon" />
         <select v-model="selectedLevel" class="filter-select">
           <option v-for="level in alertLevels" :key="level" :value="level">
-            {{ level }} Level
+            {{ level }} 级别
           </option>
         </select>
       </div>
@@ -171,9 +171,9 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
       <div class="filter-group">
         <CheckCircle :size="16" class="filter-icon" />
         <select v-model="selectedStatus" class="filter-select">
-          <option value="All">All Status</option>
-          <option value="active">Active</option>
-          <option value="resolved">Resolved</option>
+          <option value="All">全部状态</option>
+          <option value="active">活跃</option>
+          <option value="resolved">已解决</option>
         </select>
       </div>
     </div>
@@ -211,7 +211,7 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
           <!-- Affected Users -->
           <div v-if="alert.affectedUsers > 0" class="affected-users">
             <AlertTriangle :size="14" />
-            <span>{{ alert.affectedUsers }} users affected</span>
+            <span>受影响用户: {{ alert.affectedUsers }}</span>
           </div>
         </div>
 
@@ -223,7 +223,7 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
             @click="acknowledgeAlert(alert.id)"
           >
             <Check :size="14" />
-            Acknowledge
+            确认
           </button>
 
           <button
@@ -232,7 +232,7 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
             @click="resolveAlert(alert.id)"
           >
             <CheckCircle :size="14" />
-            Resolve
+            解决
           </button>
 
           <button
@@ -240,7 +240,7 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
             @click="viewAlertDetails(alert)"
           >
             <ExternalLink :size="14" />
-            View Details
+            查看详情
           </button>
         </div>
       </div>
@@ -248,8 +248,8 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
       <!-- Empty State -->
       <div v-if="filteredAlerts.length === 0" class="empty-state">
         <CheckCircle :size="48" class="empty-icon" />
-        <h3>No Alerts Found</h3>
-        <p>Try adjusting your filters or search criteria</p>
+        <h3>未找到告警</h3>
+        <p>请尝试调整筛选条件或搜索词</p>
       </div>
     </div>
 
@@ -266,7 +266,7 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
     <div v-if="selectedAlert" class="modal-overlay" @click="selectedAlert = null">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>Alert Details</h2>
+          <h2>告警详情</h2>
           <button class="close-btn" @click="selectedAlert = null">
             <X :size="20" />
           </button>
@@ -275,47 +275,47 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
         <div class="modal-body">
           <div class="detail-section">
             <div class="detail-row">
-              <span class="detail-label">Level:</span>
+              <span class="detail-label">级别:</span>
               <span :class="['detail-value', 'level-badge', getLevelClass(selectedAlert.level)]">
                 {{ selectedAlert.level.toUpperCase() }}
               </span>
             </div>
 
             <div class="detail-row">
-              <span class="detail-label">Status:</span>
+              <span class="detail-label">状态:</span>
               <span :class="['detail-value', 'status-badge', getStatusBadgeClass(selectedAlert.status)]">
                 {{ selectedAlert.status.charAt(0).toUpperCase() + selectedAlert.status.slice(1) }}
               </span>
             </div>
 
             <div class="detail-row">
-              <span class="detail-label">Service:</span>
+              <span class="detail-label">服务:</span>
               <span class="detail-value">{{ selectedAlert.service }}</span>
             </div>
 
             <div class="detail-row">
-              <span class="detail-label">Source:</span>
+              <span class="detail-label">来源:</span>
               <span class="detail-value">{{ selectedAlert.source }}</span>
             </div>
 
             <div class="detail-row">
-              <span class="detail-label">Timestamp:</span>
+              <span class="detail-label">时间戳:</span>
               <span class="detail-value">{{ selectedAlert.timestamp }}</span>
             </div>
 
             <div class="detail-row">
-              <span class="detail-label">Affected Users:</span>
+              <span class="detail-label">受影响用户:</span>
               <span class="detail-value">{{ selectedAlert.affectedUsers }}</span>
             </div>
           </div>
 
           <div class="detail-section full">
-            <span class="detail-label">Title:</span>
+            <span class="detail-label">标题:</span>
             <span class="detail-value">{{ selectedAlert.title }}</span>
           </div>
 
           <div class="detail-section full">
-            <span class="detail-label">Message:</span>
+            <span class="detail-label">消息:</span>
             <p class="detail-value message">{{ selectedAlert.message }}</p>
           </div>
 
@@ -326,14 +326,14 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
               @click="resolveAlert(selectedAlert.id); selectedAlert = null"
             >
               <CheckCircle :size="16" />
-              Resolve Alert
+              解决告警
             </button>
 
             <button
               class="modal-action-btn close"
               @click="selectedAlert = null"
             >
-              Close
+              关闭
             </button>
           </div>
         </div>
@@ -408,6 +408,7 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
   color: var(--text-gray);
   margin: 0;
   font-family: var(--font-family);
+  white-space: nowrap;
 }
 
 .header-actions {

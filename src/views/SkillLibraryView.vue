@@ -122,6 +122,7 @@ const handleCreateRule = () => {
   color: var(--text-gray);
   margin: 0;
   font-family: var(--font-family);
+  white-space: nowrap;
 }
 
 .header-actions {

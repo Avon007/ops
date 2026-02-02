@@ -29,26 +29,26 @@ export interface DeploymentMetric {
  */
 const MOCK_METRICS: DeploymentMetric[] = [
   {
-    label: 'Total Deployments',
+    label: '总部署数',
     value: '1,284',
-    change: '+12% this month',
+    change: '本月 +12%',
     trend: 'up'
   },
   {
-    label: 'Active Deployments',
+    label: '活跃部署',
     value: '47',
-    status: 'All systems operational'
+    status: '所有系统运行正常'
   },
   {
-    label: 'Success Rate',
+    label: '成功率',
     value: '98.5%',
-    change: '+2.3% improvement',
+    change: '提升 2.3%',
     trend: 'up'
   },
   {
-    label: 'Failed Deployments',
+    label: '失败部署',
     value: '3',
-    change: '-5 from last week',
+    change: '较上周减少 5 次',
     trend: 'down'
   }
 ]

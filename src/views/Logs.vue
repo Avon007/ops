@@ -178,11 +178,11 @@ const viewLogDetails = (logId: number) => {
       <table class="logs-table">
         <thead>
           <tr>
-            <th>Timestamp</th>
-            <th>Level</th>
-            <th>Service</th>
-            <th>Message</th>
-            <th>Actions</th>
+            <th>时间戳</th>
+            <th>级别</th>
+            <th>服务</th>
+            <th>消息</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody>
@@ -209,7 +209,7 @@ const viewLogDetails = (logId: number) => {
                 class="view-btn"
                 @click="viewLogDetails(log.id)"
               >
-                View Details
+                查看详情
               </button>
             </td>
           </tr>
@@ -230,30 +230,30 @@ const viewLogDetails = (logId: number) => {
     <div v-if="logsStore.selectedLog" class="modal-overlay" @click="logsStore.setSelectedLog(null)">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>Log Details</h2>
+          <h2>日志详情</h2>
           <button class="close-btn" @click="logsStore.setSelectedLog(null)">×</button>
         </div>
         <div class="modal-body">
           <div class="detail-row">
-            <span class="detail-label">Timestamp:</span>
+            <span class="detail-label">时间戳:</span>
             <span class="detail-value">{{ logsStore.selectedLog.timestamp }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Level:</span>
+            <span class="detail-label">级别:</span>
             <span :class="['detail-value', 'level-badge', getLevelClass(logsStore.selectedLog.level)]" :style="{ backgroundColor: getLevelBgColor(logsStore.selectedLog.level) }">
               {{ logsStore.selectedLog.level.toUpperCase() }}
             </span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Service:</span>
+            <span class="detail-label">服务:</span>
             <span class="detail-value">{{ logsStore.selectedLog.service }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Message:</span>
+            <span class="detail-label">消息:</span>
             <span class="detail-value">{{ logsStore.selectedLog.message }}</span>
           </div>
           <div class="detail-row full">
-            <span class="detail-label">Details:</span>
+            <span class="detail-label">详细信息:</span>
             <pre class="detail-value code">{{ logsStore.selectedLog.details }}</pre>
           </div>
         </div>
@@ -328,6 +328,7 @@ const viewLogDetails = (logId: number) => {
   color: var(--text-gray);
   margin: 0;
   font-family: var(--font-family);
+  white-space: nowrap;
 }
 
 .header-actions {

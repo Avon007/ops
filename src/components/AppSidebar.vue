@@ -84,7 +84,6 @@ const navigateTo = async (path: string) => {
 
     <!-- Navigation -->
     <div class="nav-section">
-      <div class="nav-label">导航模块</div>
       <div
         v-for="item in navItems"
         :key="item.id"
@@ -229,7 +228,7 @@ const navigateTo = async (path: string) => {
 }
 
 .nav-number {
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-light);
   font-family: var(--font-family);

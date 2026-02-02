@@ -68,11 +68,11 @@
   --spacing-xl: 20px;
   --spacing-2xl: 25px;
   --spacing-3xl: 30px;
-   --spacing-5xl: 430px;
+   --spacing-5xl: 330px;
 
   /* ==================== TYPOGRAPHY ==================== */
-  --font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
-  --font-mono: 'Consolas', 'Monaco', monospace;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
 
   /* Font Sizes */
   --font-size-xs: 10px;
@@ -86,8 +86,8 @@
   --font-size-4xl: 32px;
   /* Additional font sizes for components */
   --font-size-caption-1: 11px;
-  --font-size-caption-2: 10px;
-  --font-size-body: 13px;
+  --font-size-caption-2: 15px;
+  --font-size-body: 15px;
   --font-size-subhead: 14px;
   --font-size-footnote: 11px;
   --font-size-title-3: 16px;

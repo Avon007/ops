@@ -107,13 +107,13 @@ const setCurrentPage = (page: number) => {
     <!-- Deployments Table Section -->
     <div class="table-section">
       <div class="table-header">
-        <h2 class="table-title">Recent Deployments</h2>
+        <h2 class="table-title">最近部署</h2>
         <div class="table-filters">
           <button class="filter-btn">
-            Filter
+            筛选
           </button>
           <button class="search-btn">
-            Search
+            搜索
           </button>
         </div>
       </div>
@@ -122,12 +122,12 @@ const setCurrentPage = (page: number) => {
         <table class="deployments-table">
           <thead>
             <tr>
-              <th>Deployment</th>
-              <th>Environment</th>
-              <th>Status</th>
-              <th>Date</th>
-              <th>Duration</th>
-              <th>Actions</th>
+              <th>部署</th>
+              <th>环境</th>
+              <th>状态</th>
+              <th>日期</th>
+              <th>持续时间</th>
+              <th>操作</th>
             </tr>
           </thead>
           <tbody>
@@ -249,6 +249,7 @@ const setCurrentPage = (page: number) => {
   color: var(--text-gray);
   margin: 0;
   font-family: var(--font-family);
+  white-space: nowrap;
 }
 
 .header-actions {

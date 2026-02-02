@@ -82,6 +82,7 @@ const emit = defineEmits<{
   font-size: var(--font-size-body);
   color: var(--text-gray);
   font-family: var(--font-family);
+  white-space: nowrap;
 }
 
 .actions {
@@ -93,7 +94,7 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 18px;
+  padding: 8px 14px;
   border-radius: var(--border-radius);
   font-size: var(--font-size-caption-2);
   font-weight: 600;

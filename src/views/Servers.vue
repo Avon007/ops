@@ -61,14 +61,14 @@ const handleClearFilters = () => {
 
 const restartServer = async (id: number) => {
   const server = serversStore.getServerById(id)
-  if (server && confirm(`Are you sure you want to restart ${server.name}?`)) {
+  if (server && confirm(`确定要重启 ${server.name} 吗?`)) {
     await serversStore.restartServer(id)
   }
 }
 
 const stopServer = async (id: number) => {
   const server = serversStore.getServerById(id)
-  if (server && confirm(`Are you sure you want to stop ${server.name}?`)) {
+  if (server && confirm(`确定要停止 ${server.name} 吗?`)) {
     await serversStore.stopServer(id)
   }
 }
@@ -118,38 +118,38 @@ const closeModal = () => {
     <div class="stats-grid">
       <div class="stat-card stat-total">
         <div class="stat-header">
-          <span class="stat-label">Total Servers</span>
+          <span class="stat-label">服务器总数</span>
           <Server :size="20" class="stat-icon" />
         </div>
         <div class="stat-value">{{ stats.total }}</div>
-        <div class="stat-change">All environments</div>
+        <div class="stat-change">所有环境</div>
       </div>
 
       <div class="stat-card stat-online">
         <div class="stat-header">
-          <span class="stat-label">Online</span>
+          <span class="stat-label">在线</span>
           <CheckCircle :size="20" class="stat-icon" />
         </div>
         <div class="stat-value">{{ stats.online }}</div>
-        <div class="stat-change">Operational</div>
+        <div class="stat-change">运行中</div>
       </div>
 
       <div class="stat-card stat-warning">
         <div class="stat-header">
-          <span class="stat-label">Warning</span>
+          <span class="stat-label">警告</span>
           <AlertTriangle :size="20" class="stat-icon" />
         </div>
         <div class="stat-value">{{ stats.warning }}</div>
-        <div class="stat-change">Needs attention</div>
+        <div class="stat-change">需要关注</div>
       </div>
 
       <div class="stat-card stat-offline">
         <div class="stat-header">
-          <span class="stat-label">Offline</span>
+          <span class="stat-label">离线</span>
           <XCircle :size="20" class="stat-icon" />
         </div>
         <div class="stat-value">{{ stats.offline }}</div>
-        <div class="stat-change">Unavailable</div>
+        <div class="stat-change">不可用</div>
       </div>
     </div>
 
@@ -160,7 +160,7 @@ const closeModal = () => {
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search servers..."
+          placeholder="搜索服务器..."
           class="search-input"
         />
       </div>
@@ -168,20 +168,20 @@ const closeModal = () => {
       <div class="filter-group">
         <Activity :size="16" class="filter-icon" />
         <select v-model="selectedStatus" class="filter-select">
-          <option value="All">All Status</option>
-          <option value="online">Online</option>
-          <option value="warning">Warning</option>
-          <option value="offline">Offline</option>
+          <option value="All">全部状态</option>
+          <option value="online">在线</option>
+          <option value="warning">警告</option>
+          <option value="offline">离线</option>
         </select>
       </div>
 
       <div class="filter-group">
         <Server :size="16" class="filter-icon" />
         <select v-model="selectedEnvironment" class="filter-select">
-          <option value="All">All Environments</option>
-          <option value="Production">Production</option>
-          <option value="Staging">Staging</option>
-          <option value="Development">Development</option>
+          <option value="All">全部环境</option>
+          <option value="Production">生产环境</option>
+          <option value="Staging">预发布环境</option>
+          <option value="Development">开发环境</option>
         </select>
       </div>
     </div>
@@ -229,7 +229,7 @@ const closeModal = () => {
           <div class="metric">
             <div class="metric-header">
               <MemoryStick :size="14" class="metric-icon" />
-              <span class="metric-label">Memory</span>
+              <span class="metric-label">内存</span>
               <span :class="['metric-value', getResourceClass(server.memory)]">{{ server.memory }}%</span>
             </div>
             <div class="metric-bar">
@@ -244,7 +244,7 @@ const closeModal = () => {
           <div class="metric">
             <div class="metric-header">
               <HardDrive :size="14" class="metric-icon" />
-              <span class="metric-label">Disk</span>
+              <span class="metric-label">磁盘</span>
               <span :class="['metric-value', getResourceClass(server.disk)]">{{ server.disk }}%</span>
             </div>
             <div class="metric-bar">
@@ -260,12 +260,12 @@ const closeModal = () => {
         <div class="server-details">
           <div class="detail-item">
             <Activity :size="14" class="detail-icon" />
-            <span class="detail-label">Uptime:</span>
+            <span class="detail-label">运行时间:</span>
             <span class="detail-value">{{ server.uptime }}</span>
           </div>
           <div class="detail-item">
             <Server :size="14" class="detail-icon" />
-            <span class="detail-label">Region:</span>
+            <span class="detail-label">区域:</span>
             <span class="detail-value">{{ server.region }}</span>
           </div>
         </div>
@@ -286,7 +286,7 @@ const closeModal = () => {
           <button
             class="action-icon-btn"
             @click="refreshServer(server.id)"
-            title="Refresh"
+            title="刷新"
           >
             <RefreshCw :size="14" />
           </button>
@@ -295,7 +295,7 @@ const closeModal = () => {
             v-if="server.status !== 'offline'"
             class="action-icon-btn"
             @click="restartServer(server.id)"
-            title="Restart"
+            title="重启"
           >
             <RotateCcw :size="14" />
           </button>
@@ -304,7 +304,7 @@ const closeModal = () => {
             class="action-icon-btn"
             :class="{ 'danger': server.status !== 'offline' }"
             @click="stopServer(server.id)"
-            :title="server.status === 'offline' ? 'Start' : 'Stop'"
+            :title="server.status === 'offline' ? '启动' : '停止'"
           >
             <Power :size="14" />
           </button>
@@ -314,7 +314,7 @@ const closeModal = () => {
             @click="viewServerDetails(server)"
           >
             <ExternalLink :size="14" />
-            Details
+            详情
           </button>
         </div>
       </div>
@@ -322,8 +322,8 @@ const closeModal = () => {
       <!-- Empty State -->
       <div v-if="filteredServers.length === 0" class="empty-state">
         <Server :size="48" class="empty-icon" />
-        <h3>No Servers Found</h3>
-        <p>Try adjusting your filters or search criteria</p>
+        <h3>未找到服务器</h3>
+        <p>请尝试调整筛选条件或搜索词</p>
       </div>
     </div>
 
@@ -340,7 +340,7 @@ const closeModal = () => {
     <div v-if="selectedServer" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>Server Details</h2>
+          <h2>服务器详情</h2>
           <button class="close-btn" @click="closeModal">
             <X :size="20" />
           </button>
@@ -349,35 +349,35 @@ const closeModal = () => {
         <div class="modal-body">
           <div class="detail-section">
             <div class="detail-row">
-              <span class="detail-label">Server Name:</span>
+              <span class="detail-label">服务器名称:</span>
               <span class="detail-value">{{ selectedServer.name }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">IP Address:</span>
+              <span class="detail-label">IP 地址:</span>
               <span class="detail-value">{{ selectedServer.ip }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Environment:</span>
+              <span class="detail-label">环境:</span>
               <span class="detail-value">{{ selectedServer.environment }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Status:</span>
+              <span class="detail-label">状态:</span>
               <span :class="['detail-value', 'status-badge', getStatusClass(selectedServer.status)]">
                 {{ selectedServer.status.charAt(0).toUpperCase() + selectedServer.status.slice(1) }}
               </span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Region:</span>
+              <span class="detail-label">区域:</span>
               <span class="detail-value">{{ selectedServer.region }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Uptime:</span>
+              <span class="detail-label">运行时间:</span>
               <span class="detail-value">{{ selectedServer.uptime }}</span>
             </div>
           </div>
 
           <div class="detail-section full">
-            <span class="detail-label">Services:</span>
+            <span class="detail-label">服务:</span>
             <div class="services-list">
               <div
                 v-for="service in selectedServer.services"
@@ -390,7 +390,7 @@ const closeModal = () => {
           </div>
 
           <div class="detail-section full">
-            <span class="detail-label">Last Check:</span>
+            <span class="detail-label">最后检查:</span>
             <span class="detail-value">{{ selectedServer.lastCheck }}</span>
           </div>
 
@@ -400,7 +400,7 @@ const closeModal = () => {
               @click="() => { selectedServer && refreshServer(selectedServer.id); closeModal() }"
             >
               <RefreshCw :size="16" />
-              Refresh
+              刷新
             </button>
 
             <button
@@ -409,14 +409,14 @@ const closeModal = () => {
               @click="() => { selectedServer && restartServer(selectedServer.id); closeModal() }"
             >
               <RotateCcw :size="16" />
-              Restart Server
+              重启服务器
             </button>
 
             <button
               class="modal-action-btn close"
               @click="closeModal"
             >
-              Close
+              关闭
             </button>
           </div>
         </div>
@@ -491,6 +491,7 @@ const closeModal = () => {
   color: var(--text-gray);
   margin: 0;
   font-family: var(--font-family);
+  white-space: nowrap;
 }
 
 .header-actions {

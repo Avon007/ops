@@ -22,7 +22,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:32:15',
     level: 'error',
     service: 'api-service',
-    message: 'Connection timeout to database server',
+    message: '数据库服务器连接超时',
     details: 'Error: ETIMEDOUT at Connection.connect (net.js:123:45)'
   },
   {
@@ -30,7 +30,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:31:42',
     level: 'warning',
     service: 'frontend-v2',
-    message: 'High memory usage detected',
+    message: '检测到高内存使用率',
     details: 'Memory usage at 85%, consider scaling up'
   },
   {
@@ -38,7 +38,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:30:28',
     level: 'info',
     service: 'auth-service',
-    message: 'User login successful',
+    message: '用户登录成功',
     details: 'User ID: 12345, IP: 192.168.1.100'
   },
   {
@@ -46,7 +46,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:29:15',
     level: 'error',
     service: 'payment-gateway',
-    message: 'Payment processing failed',
+    message: '支付处理失败',
     details: 'Transaction ID: txn_789xyz, Error: Invalid card format'
   },
   {
@@ -54,7 +54,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:28:33',
     level: 'debug',
     service: 'api-service',
-    message: 'API request received',
+    message: '收到 API 请求',
     details: 'GET /api/v1/users?page=1&limit=10'
   },
   {
@@ -62,7 +62,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:27:21',
     level: 'info',
     service: 'deployment-service',
-    message: 'Deployment completed successfully',
+    message: '部署成功完成',
     details: 'frontend-v2.4.1 deployed to production'
   },
   {
@@ -70,7 +70,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:26:18',
     level: 'warning',
     service: 'cache-service',
-    message: 'Cache miss rate increasing',
+    message: '缓存未命中率上升',
     details: 'Current miss rate: 45%, threshold: 40%'
   },
   {
@@ -78,7 +78,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:25:05',
     level: 'info',
     service: 'background-worker',
-    message: 'Job completed',
+    message: '任务完成',
     details: 'Report generation completed in 2.3s'
   },
   {
@@ -86,7 +86,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:24:12',
     level: 'error',
     service: 'email-service',
-    message: 'Failed to send email',
+    message: '发送邮件失败',
     details: 'SMTP Error: Connection refused'
   },
   {
@@ -94,7 +94,7 @@ const MOCK_LOGS: Log[] = [
     timestamp: '2026-01-29 14:23:45',
     level: 'debug',
     service: 'api-service',
-    message: 'Database query executed',
+    message: '执行数据库查询',
     details: 'SELECT * FROM users WHERE active = true (23ms)'
   }
 ]

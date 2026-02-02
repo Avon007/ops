@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import {
   LayoutDashboard,
   GitBranch,
@@ -22,8 +22,9 @@ interface Props {
 defineProps<Props>()
 
 const router = useRouter()
+const route = useRoute()
 
-const currentPath = ref(router.currentRoute.value.path)
+const currentPath = computed(() => route.path)
 const systemStatus = ref('在线')
 const currentTime = ref('')
 
@@ -52,9 +53,14 @@ const navItems = ref([
   { id: '08', label: '技能库', path: '/skills', icon: Brain }
 ])
 
-const navigateTo = (path: string) => {
-  currentPath.value = path
-  router.push(path)
+const navigateTo = async (path: string) => {
+  try {
+    console.log('Navigating to:', path)
+    await router.push(path)
+    console.log('Navigation successful to:', path)
+  } catch (error) {
+    console.error('Navigation error:', error)
+  }
 }
 </script>
 

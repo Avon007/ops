@@ -1,15 +1,8 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { Bot, X, Send, Minimize2, Maximize2, Sparkles, AlertCircle } from 'lucide-vue-next'
-import { getGeminiResponse, checkGeminiAvailability } from '@/services/geminiService'
-
-interface ChatMessage {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: string
-  groundingMetadata?: any
-}
+import { useClawdBotStore } from '@/stores/clawdBot'
+import { useChatState, useChatFormat } from '@/composables'
 
 // Props
 interface Props {
@@ -24,54 +17,13 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
-// State
-const isOpen = ref(props.modelValue)
-const isMinimized = ref(false)
+// Store & Composables
+const clawdBotStore = useClawdBotStore()
+const { isOpen, isMinimized, messagesContainer, inputRef, toggleChat, toggleMinimize, scrollToBottom, focusInput } = useChatState(props.modelValue)
+const { splitParagraphs } = useChatFormat()
+
+// Local state
 const inputMessage = ref('')
-const isLoading = ref(false)
-const isApiAvailable = ref(false)
-const messages = ref<ChatMessage[]>([
-  {
-    id: 'msg-welcome',
-    role: 'assistant',
-    content: `👋 你好！我是 **ClawdBot**，你的智能运维助手！
-
-我可以帮你：
-
-🔍 **故障诊断**
-• 日志分析与根因定位
-• 性能瓶颈识别
-• 系统集成问题排查
-
-📊 **性能优化**
-• 容量规划建议
-• SQL 查询优化
-• 缓存策略配置
-
-🛠️ **自动化脚本**
-• Shell 脚本生成
-• 监控配置编写
-• 部署自动化
-
-💡 **快速开始**
-试着问我：
-- "如何分析 Nginx 日志中的 5xx 错误？"
-- "帮我写一个 Redis 性能监控脚本"
-- "数据库连接数过高怎么排查？"`,
-    timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  }
-])
-
-const messagesContainer = ref<HTMLElement>()
-const inputRef = ref<HTMLInputElement>()
-
-// Suggestions
-const suggestions = ref<string[]>([
-  '分析系统日志错误',
-  '优化数据库性能',
-  '编写监控脚本',
-  '排查网络问题'
-])
 
 // Watch for prop changes
 watch(() => props.modelValue, (newVal) => {
@@ -80,81 +32,20 @@ watch(() => props.modelValue, (newVal) => {
 
 watch(isOpen, (newVal) => {
   emit('update:modelValue', newVal)
-  if (newVal) {
-    nextTick(() => {
-      inputRef.value?.focus()
-      scrollToBottom()
-    })
-  }
 })
 
 // Methods
-const toggleChat = () => {
-  isOpen.value = !isOpen.value
-}
-
-const toggleMinimize = () => {
-  isMinimized.value = !isMinimized.value
-}
-
 const sendMessage = async () => {
-  if (!inputMessage.value.trim() || isLoading.value) return
+  if (!inputMessage.value.trim() || clawdBotStore.isLoading) return
 
-  const userMessage: ChatMessage = {
-    id: `msg-${Date.now()}`,
-    role: 'user',
-    content: inputMessage.value,
-    timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  }
-
-  messages.value.push(userMessage)
   const userInput = inputMessage.value
   inputMessage.value = ''
 
+  // Send message via store
+  await clawdBotStore.sendMessage(userInput)
+
   // Scroll to bottom
-  await nextTick()
   scrollToBottom()
-
-  // Show loading
-  isLoading.value = true
-
-  try {
-    // Prepare history
-    const history = messages.value
-      .slice(-10)
-      .map(msg => ({ role: msg.role, content: msg.content }))
-
-    // Get AI response
-    const response = await getGeminiResponse(userInput, history)
-
-    const assistantMessage: ChatMessage = {
-      id: `msg-${Date.now() + 1}`,
-      role: 'assistant',
-      content: response.text,
-      timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-      groundingMetadata: response.groundingMetadata
-    }
-
-    messages.value.push(assistantMessage)
-
-    // Hide suggestions after first message
-    if (messages.value.length > 2) {
-      suggestions.value = []
-    }
-  } catch (error) {
-    console.error('Error sending message:', error)
-    const errorMessage: ChatMessage = {
-      id: `msg-${Date.now() + 1}`,
-      role: 'assistant',
-      content: '抱歉，处理你的请求时出现了错误。请稍后再试。',
-      timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    }
-    messages.value.push(errorMessage)
-  } finally {
-    isLoading.value = false
-    await nextTick()
-    scrollToBottom()
-  }
 }
 
 const handleSuggestion = (suggestion: string) => {
@@ -162,45 +53,15 @@ const handleSuggestion = (suggestion: string) => {
   sendMessage()
 }
 
-const scrollToBottom = () => {
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-  }
-}
-
-const formatMessage = (content: string) => {
-  // Simple markdown-like formatting
-  return content
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>')
-}
-
 const clearChat = () => {
-  messages.value = [
-    {
-      id: 'msg-welcome',
-      role: 'assistant',
-      content: '对话已清空。有什么我可以帮你的吗？',
-      timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    }
-  ]
-  suggestions.value = [
-    '分析系统日志错误',
-    '优化数据库性能',
-    '编写监控脚本',
-    '排查网络问题'
-  ]
+  clawdBotStore.clearChat()
 }
 
 // Lifecycle
 onMounted(async () => {
-  isApiAvailable.value = await checkGeminiAvailability()
+  await clawdBotStore.init()
   if (isOpen.value) {
-    nextTick(() => {
-      inputRef.value?.focus()
-    })
+    focusInput()
   }
 })
 </script>
@@ -225,9 +86,9 @@ onMounted(async () => {
             <Sparkles :size="14" class="sparkle-icon" />
             ClawdBot
           </div>
-          <div class="header-status" :class="{ available: isApiAvailable }">
+          <div class="header-status" :class="{ available: clawdBotStore.isApiAvailable }">
             <span class="status-dot"></span>
-            {{ isApiAvailable ? 'AI 在线' : '演示模式' }}
+            {{ clawdBotStore.isApiAvailable ? 'AI 在线' : '演示模式' }}
           </div>
         </div>
       </div>
@@ -249,7 +110,7 @@ onMounted(async () => {
     <div v-show="!isMinimized" ref="messagesContainer" class="clawdbot-messages">
       <!-- Messages -->
       <div
-        v-for="msg in messages"
+        v-for="msg in clawdBotStore.messages"
         :key="msg.id"
         class="message"
         :class="msg.role"
@@ -259,14 +120,19 @@ onMounted(async () => {
         </div>
         <div class="msg-content">
           <div class="msg-bubble" :class="msg.role">
-            <div class="msg-text" v-html="formatMessage(msg.content)"></div>
+            <!-- Safe message rendering without v-html -->
+            <div class="msg-text">
+              <p v-for="(paragraph, idx) in splitParagraphs(msg.content)" :key="idx">
+                {{ paragraph }}
+              </p>
+            </div>
             <div class="msg-time">{{ msg.timestamp }}</div>
           </div>
         </div>
       </div>
 
       <!-- Loading Indicator -->
-      <div v-if="isLoading" class="message assistant">
+      <div v-if="clawdBotStore.isLoading" class="message assistant">
         <div class="msg-avatar">
           <Bot :size="16" :stroke-width="2.5" />
         </div>
@@ -282,9 +148,9 @@ onMounted(async () => {
       </div>
 
       <!-- Suggestions (only show at start) -->
-      <div v-if="suggestions.length > 0 && messages.length < 3" class="suggestions">
+      <div v-if="clawdBotStore.showSuggestions" class="suggestions">
         <button
-          v-for="suggestion in suggestions"
+          v-for="suggestion in clawdBotStore.suggestions"
           :key="suggestion"
           class="suggestion-btn"
           @click="handleSuggestion(suggestion)"
@@ -306,7 +172,7 @@ onMounted(async () => {
       />
       <button
         class="send-btn"
-        :disabled="isLoading || !inputMessage.trim()"
+        :disabled="clawdBotStore.isLoading || !inputMessage.trim()"
         @click="sendMessage"
       >
         <Send :size="18" :stroke-width="2.5" />
@@ -561,16 +427,12 @@ onMounted(async () => {
   word-wrap: break-word;
 }
 
-.msg-text :deep(strong) {
-  font-weight: 600;
+.msg-text p {
+  margin: 0 0 8px 0;
 }
 
-.msg-text :deep(code) {
-  background: rgba(0, 0, 0, 0.05);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
+.msg-text p:last-child {
+  margin-bottom: 0;
 }
 
 .msg-time {

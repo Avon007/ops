@@ -6,10 +6,12 @@ interface Props {
   subtitle?: string
   breadcrumbs?: string
   isRefreshing?: boolean
+  canRefresh?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  isRefreshing: false
+  isRefreshing: false,
+  canRefresh: true
 })
 
 const emit = defineEmits<{
@@ -27,7 +29,7 @@ const emit = defineEmits<{
         <p v-if="subtitle" class="page-subtitle">{{ subtitle }}</p>
       </div>
       <div class="actions">
-        <button class="btn btn-outline" @click="emit('refresh')" :disabled="isRefreshing">
+        <button class="btn btn-outline" @click="emit('refresh')" :disabled="isRefreshing || !canRefresh">
           <Loader2 v-if="isRefreshing" :size="14" class="spin" />
           <RefreshCw v-else :size="14" />
           <span>{{ isRefreshing ? '刷新中...' : '刷新' }}</span>

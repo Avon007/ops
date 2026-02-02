@@ -1,33 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import {
   Settings,
-  Layout,
-  Monitor,
-  Type,
-  Bell,
-  Database,
   RotateCcw,
   Download,
   Upload,
   X,
   Check
 } from 'lucide-vue-next'
-import {
-  getPreferences,
-  setLayoutMode,
-  setCardSize,
-  setCardsPerRow,
-  toggleSidebar,
-  setCompactMode,
-  setAnimations,
-  setFontSize,
-  updatePreferences,
-  resetPreferences,
-  exportPreferences,
-  importPreferences,
-  subscribe
-} from '@/services/preferencesService'
+import { useSettingsStore } from '@/stores/settings'
+import { useSettingsDialog, useSettingsOptions } from '@/composables'
 import type { LayoutMode, CardSize } from '@/types'
 
 // Props
@@ -35,51 +17,19 @@ interface Props {
   modelValue: boolean
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
-// State
-const currentPrefs = ref(getPreferences())
-const activeTab = ref('layout')
+// Store & Composables
+const settingsStore = useSettingsStore()
+const { activeTab, saveStatus, showSaved, setActiveTab } = useSettingsDialog()
+const { layoutOptions, cardSizeOptions, fontSizeOptions, tabs } = useSettingsOptions()
+
+// Local state
 const importInput = ref<HTMLInputElement>()
 const showResetConfirm = ref(false)
-const saveStatus = ref<'idle' | 'saved' | 'error'>('idle')
-
-// Layout mode options
-const layoutOptions = computed(() => [
-  { value: 'default' as LayoutMode, name: '默认布局', icon: Layout, description: '标准的三栏布局' },
-  { value: 'compact' as LayoutMode, name: '紧凑布局', icon: Monitor, description: '更紧凑的卡片排列' },
-  { value: 'spacious' as LayoutMode, name: '宽松布局', icon: Layout, description: '更宽松的间距' },
-  { value: 'sidebar-left' as LayoutMode, name: '左侧边栏', icon: Layout, description: '侧边栏在左侧' },
-  { value: 'sidebar-right' as LayoutMode, name: '右侧边栏', icon: Layout, description: '侧边栏在右侧' }
-])
-
-// Card size options
-const cardSizeOptions = computed(() => [
-  { value: 'small' as CardSize, name: '小', description: '显示更多内容' },
-  { value: 'medium' as CardSize, name: '中', description: '平衡显示' },
-  { value: 'large' as CardSize, name: '大', description: '更易阅读' },
-  { value: 'auto' as CardSize, name: '自适应', description: '自动调整' }
-])
-
-// Font size options
-const fontSizeOptions = computed(() => [
-  { value: 'small' as const, name: '小', size: '13px' },
-  { value: 'medium' as const, name: '中', size: '15px' },
-  { value: 'large' as const, name: '大', size: '17px' },
-  { value: 'extra-large' as const, name: '特大', size: '19px' }
-])
-
-// Tabs
-const tabs = computed(() => [
-  { id: 'layout', name: '布局', icon: Layout },
-  { id: 'display', name: '显示', icon: Monitor },
-  { id: 'font', name: '字体', icon: Type },
-  { id: 'notifications', name: '通知', icon: Bell },
-  { id: 'data', name: '数据', icon: Database }
-])
 
 // Methods
 const close = () => {
@@ -87,63 +37,62 @@ const close = () => {
 }
 
 const handleLayoutModeChange = (mode: LayoutMode) => {
-  setLayoutMode(mode)
-  currentPrefs.value = getPreferences()
-  showSaveSuccess()
+  settingsStore.setLayoutMode(mode)
+  showSaved()
 }
 
 const handleCardSizeChange = (size: CardSize) => {
-  setCardSize(size)
-  currentPrefs.value = getPreferences()
-  showSaveSuccess()
+  settingsStore.setCardSize(size)
+  showSaved()
 }
 
 const handleCardsPerRowChange = (count: number) => {
-  setCardsPerRow(count)
-  currentPrefs.value = getPreferences()
-  showSaveSuccess()
+  settingsStore.setCardsPerRow(count)
+  showSaved()
 }
 
 const handleCompactModeToggle = () => {
-  setCompactMode(!currentPrefs.value.display.compactMode)
-  currentPrefs.value = getPreferences()
-  showSaveSuccess()
+  settingsStore.setCompactMode(!settingsStore.isCompactMode)
+  showSaved()
 }
 
 const handleAnimationsToggle = () => {
-  setAnimations(!currentPrefs.value.display.animationsEnabled)
-  currentPrefs.value = getPreferences()
-  showSaveSuccess()
+  settingsStore.setAnimations(!settingsStore.animationsEnabled)
+  showSaved()
 }
 
 const handleFontSizeChange = (size: 'small' | 'medium' | 'large' | 'extra-large') => {
-  setFontSize(size)
-  currentPrefs.value = getPreferences()
-  showSaveSuccess()
+  settingsStore.setFontSize(size)
+  showSaved()
 }
 
-const handleShowElementToggle = (key: keyof typeof currentPrefs.value.display) => {
+const handleShowElementToggle = (key: keyof typeof settingsStore.preferences.display) => {
   if (key.startsWith('show')) {
-    currentPrefs.value.display[key] = !currentPrefs.value.display[key]
-    updatePreferences({ display: currentPrefs.value.display })
-    showSaveSuccess()
+    const newValue = !settingsStore.preferences.display[key]
+    settingsStore.updatePreferences({
+      display: { ...settingsStore.preferences.display, [key]: newValue }
+    })
+    showSaved()
   }
 }
 
-const handleNotificationToggle = (key: keyof typeof currentPrefs.value.notifications) => {
-  currentPrefs.value.notifications[key] = !currentPrefs.value.notifications[key]
-  updatePreferences({ notifications: currentPrefs.value.notifications })
-  showSaveSuccess()
+const handleNotificationToggle = (key: keyof typeof settingsStore.preferences.notifications) => {
+  const newValue = !settingsStore.preferences.notifications[key]
+  settingsStore.updatePreferences({
+    notifications: { ...settingsStore.preferences.notifications, [key]: newValue }
+  })
+  showSaved()
 }
 
 const handleRefreshIntervalChange = (interval: number) => {
-  currentPrefs.value.dataRefresh.interval = interval
-  updatePreferences({ dataRefresh: currentPrefs.value.dataRefresh })
-  showSaveSuccess()
+  settingsStore.updatePreferences({
+    dataRefresh: { ...settingsStore.preferences.dataRefresh, interval }
+  })
+  showSaved()
 }
 
 const handleExport = () => {
-  const json = exportPreferences()
+  const json = settingsStore.exportPreferences()
   const blob = new Blob([json], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -164,10 +113,10 @@ const handleImportFile = (event: Event) => {
   const reader = new FileReader()
   reader.onload = (e) => {
     const content = e.target?.result as string
-    if (importPreferences(content)) {
-      currentPrefs.value = getPreferences()
-      showSaveSuccess()
+    if (settingsStore.importPreferences(content)) {
+      showSaved()
     } else {
+      // Show error status
       saveStatus.value = 'error'
       setTimeout(() => (saveStatus.value = 'idle'), 2000)
     }
@@ -176,22 +125,15 @@ const handleImportFile = (event: Event) => {
 }
 
 const handleReset = () => {
-  resetPreferences()
-  currentPrefs.value = getPreferences()
+  settingsStore.resetPreferences()
   showResetConfirm.value = false
-  showSaveSuccess()
+  showSaved()
 }
 
-const showSaveSuccess = () => {
-  saveStatus.value = 'saved'
-  setTimeout(() => (saveStatus.value = 'idle'), 2000)
-}
-
-// Lifecycle
+// Lifecycle - sync active tab when dialog opens
 onMounted(() => {
-  subscribe((prefs) => {
-    currentPrefs.value = prefs
-  })
+  // Load preferences on mount
+  settingsStore.loadPreferences()
 })
 </script>
 
@@ -227,7 +169,7 @@ onMounted(() => {
             v-for="tab in tabs"
             :key="tab.id"
             :class="['tab-button', { active: activeTab === tab.id }]"
-            @click="activeTab = tab.id"
+            @click="setActiveTab(tab.id)"
           >
             <component :is="tab.icon" :size="18" />
             <span>{{ tab.name }}</span>
@@ -243,7 +185,7 @@ onMounted(() => {
               <button
                 v-for="option in layoutOptions"
                 :key="option.value"
-                :class="['option-card', { active: currentPrefs.layout.mode === option.value }]"
+                :class="['option-card', { active: settingsStore.layoutMode === option.value }]"
                 @click="handleLayoutModeChange(option.value)"
               >
                 <component :is="option.icon" :size="24" />
@@ -261,7 +203,7 @@ onMounted(() => {
                 <button
                   v-for="option in cardSizeOptions"
                   :key="option.value"
-                  :class="['button-option', { active: currentPrefs.layout.cardSize === option.value }]"
+                  :class="['button-option', { active: settingsStore.cardSize === option.value }]"
                   @click="handleCardSizeChange(option.value)"
                 >
                   {{ option.name }}
@@ -275,19 +217,19 @@ onMounted(() => {
                 type="range"
                 min="1"
                 max="6"
-                :value="currentPrefs.layout.cardsPerRow"
+                :value="settingsStore.preferences.layout.cardsPerRow"
                 @input="handleCardsPerRowChange(Number(($event.target as HTMLInputElement).value))"
                 class="range-input"
               />
-              <span class="range-value">{{ currentPrefs.layout.cardsPerRow }}</span>
+              <span class="range-value">{{ settingsStore.preferences.layout.cardsPerRow }}</span>
             </div>
 
             <div class="settings-section">
               <label class="checkbox-label">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.layout.sidebarCollapsed"
-                  @change="toggleSidebar"
+                  :checked="settingsStore.preferences.layout.sidebarCollapsed"
+                  @change="settingsStore.toggleSidebar"
                 />
                 <span>折叠侧边栏</span>
               </label>
@@ -301,7 +243,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.display.showSystemStatus"
+                  :checked="settingsStore.preferences.display.showSystemStatus"
                   @change="handleShowElementToggle('showSystemStatus')"
                 />
                 <span>显示系统状态</span>
@@ -309,7 +251,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.display.showMetrics"
+                  :checked="settingsStore.preferences.display.showMetrics"
                   @change="handleShowElementToggle('showMetrics')"
                 />
                 <span>显示性能指标</span>
@@ -317,7 +259,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.display.showCharts"
+                  :checked="settingsStore.preferences.display.showCharts"
                   @change="handleShowElementToggle('showCharts')"
                 />
                 <span>显示图表</span>
@@ -325,7 +267,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.display.showLogs"
+                  :checked="settingsStore.preferences.display.showLogs"
                   @change="handleShowElementToggle('showLogs')"
                 />
                 <span>显示日志</span>
@@ -333,7 +275,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.display.showAlerts"
+                  :checked="settingsStore.preferences.display.showAlerts"
                   @change="handleShowElementToggle('showAlerts')"
                 />
                 <span>显示告警</span>
@@ -345,7 +287,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.display.compactMode"
+                  :checked="settingsStore.isCompactMode"
                   @change="handleCompactModeToggle"
                 />
                 <span>紧凑模式</span>
@@ -353,7 +295,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.display.animationsEnabled"
+                  :checked="settingsStore.animationsEnabled"
                   @change="handleAnimationsToggle"
                 />
                 <span>启用动画</span>
@@ -368,7 +310,7 @@ onMounted(() => {
               <button
                 v-for="option in fontSizeOptions"
                 :key="option.value"
-                :class="['button-option', { active: currentPrefs.font.size === option.value }]"
+                :class="['button-option', { active: settingsStore.fontSize === option.value }]"
                 @click="handleFontSizeChange(option.value)"
               >
                 <span :style="{ fontSize: option.size }">{{ option.name }}</span>
@@ -387,7 +329,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.notifications.enabled"
+                  :checked="settingsStore.preferences.notifications.enabled"
                   @change="handleNotificationToggle('enabled')"
                 />
                 <span>启用通知</span>
@@ -395,7 +337,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.notifications.sound"
+                  :checked="settingsStore.preferences.notifications.sound"
                   @change="handleNotificationToggle('sound')"
                 />
                 <span>提示音</span>
@@ -403,7 +345,7 @@ onMounted(() => {
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="currentPrefs.notifications.desktop"
+                  :checked="settingsStore.preferences.notifications.desktop"
                   @change="handleNotificationToggle('desktop')"
                 />
                 <span>桌面通知</span>
@@ -412,13 +354,13 @@ onMounted(() => {
 
             <h3>数据刷新</h3>
             <div class="settings-section">
-              <label>刷新间隔 (秒): {{ currentPrefs.dataRefresh.interval }}</label>
+              <label>刷新间隔 (秒): {{ settingsStore.preferences.dataRefresh.interval }}</label>
               <input
                 type="range"
                 min="10"
                 max="300"
                 step="10"
-                :value="currentPrefs.dataRefresh.interval"
+                :value="settingsStore.preferences.dataRefresh.interval"
                 @input="handleRefreshIntervalChange(Number(($event.target as HTMLInputElement).value))"
                 class="range-input"
               />

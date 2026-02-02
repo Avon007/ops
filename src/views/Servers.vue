@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Search,
@@ -11,7 +11,6 @@ import {
   MemoryStick,
   RefreshCw,
   Power,
-  PowerOff,
   RotateCcw,
   ChevronLeft,
   ChevronRight,
@@ -19,204 +18,73 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Plus
+  Plus,
+  X
 } from 'lucide-vue-next'
+import { useServersStore } from '@/stores/servers'
+import { useServerFilter, useServerHelpers } from '@/composables'
+import type { Server as ServerType } from '@/stores/servers'
 
 const router = useRouter()
+const serversStore = useServersStore()
 
-// Filter options
-const selectedStatus = ref('All')
-const selectedEnvironment = ref('All')
-const searchQuery = ref('')
+// Composables
+const {
+  selectedStatus,
+  selectedEnvironment,
+  searchQuery,
+  filteredServers,
+  hasActiveFilters,
+  clearFilters
+} = useServerFilter(() => serversStore.servers)
 
-// Mock server data
-const servers = ref([
-  {
-    id: 1,
-    name: 'app-server-01',
-    ip: '192.168.1.100',
-    environment: 'Production',
-    status: 'online',
-    cpu: 45,
-    memory: 62,
-    disk: 78,
-    uptime: '45d 12h 34m',
-    region: 'US-East',
-    services: ['api-service', 'web-frontend'],
-    lastCheck: '2026-01-29 14:32:15'
-  },
-  {
-    id: 2,
-    name: 'app-server-02',
-    ip: '192.168.1.101',
-    environment: 'Production',
-    status: 'online',
-    cpu: 92,
-    memory: 88,
-    disk: 85,
-    uptime: '45d 11h 22m',
-    region: 'US-East',
-    services: ['api-service', 'worker-01'],
-    lastCheck: '2026-01-29 14:32:15'
-  },
-  {
-    id: 3,
-    name: 'db-server-01',
-    ip: '192.168.1.200',
-    environment: 'Production',
-    status: 'online',
-    cpu: 34,
-    memory: 71,
-    disk: 92,
-    uptime: '60d 8h 15m',
-    region: 'US-East',
-    services: ['postgresql', 'redis'],
-    lastCheck: '2026-01-29 14:32:15'
-  },
-  {
-    id: 4,
-    name: 'cache-server-01',
-    ip: '192.168.1.150',
-    environment: 'Staging',
-    status: 'warning',
-    cpu: 78,
-    memory: 91,
-    disk: 55,
-    uptime: '30d 5h 42m',
-    region: 'US-West',
-    services: ['redis', 'memcached'],
-    lastCheck: '2026-01-29 14:31:50'
-  },
-  {
-    id: 5,
-    name: 'app-server-03',
-    ip: '192.168.1.102',
-    environment: 'Staging',
-    status: 'online',
-    cpu: 23,
-    memory: 45,
-    disk: 42,
-    uptime: '15d 3h 28m',
-    region: 'US-West',
-    services: ['api-service', 'web-frontend'],
-    lastCheck: '2026-01-29 14:32:15'
-  },
-  {
-    id: 6,
-    name: 'worker-server-01',
-    ip: '192.168.1.103',
-    environment: 'Production',
-    status: 'offline',
-    cpu: 0,
-    memory: 0,
-    disk: 67,
-    uptime: '0d 0h 0m',
-    region: 'EU-West',
-    services: ['background-worker', 'email-service'],
-    lastCheck: '2026-01-29 14:20:00'
-  },
-  {
-    id: 7,
-    name: 'cdn-node-01',
-    ip: '192.168.1.104',
-    environment: 'Production',
-    status: 'online',
-    cpu: 56,
-    memory: 68,
-    disk: 34,
-    uptime: '20d 18h 55m',
-    region: 'Asia-Pacific',
-    services: ['nginx', 'cdn-cache'],
-    lastCheck: '2026-01-29 14:32:15'
-  },
-  {
-    id: 8,
-    name: 'monitoring-server',
-    ip: '192.168.1.105',
-    environment: 'Production',
-    status: 'online',
-    cpu: 28,
-    memory: 52,
-    disk: 61,
-    uptime: '90d 4h 12m',
-    region: 'US-East',
-    services: ['prometheus', 'grafana'],
-    lastCheck: '2026-01-29 14:32:15'
-  }
-])
+const {
+  getStatusIcon,
+  getStatusClass,
+  getResourceClass
+} = useServerHelpers()
 
-const selectedServer = ref<typeof servers.value[0] | null>(null)
+// Local State
+const selectedServer = ref<ServerType | null>(null)
 
-// Computed
-const filteredServers = computed(() => {
-  return servers.value.filter(server => {
-    const matchesStatus = selectedStatus.value === 'All' || server.status === selectedStatus.value.toLowerCase()
-    const matchesEnvironment = selectedEnvironment.value === 'All' || server.environment === selectedEnvironment.value
-    const matchesSearch = searchQuery.value === '' ||
-      server.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      server.ip.includes(searchQuery.value) ||
-      server.services.some(s => s.toLowerCase().includes(searchQuery.value.toLowerCase()))
-    return matchesStatus && matchesEnvironment && matchesSearch
-  })
-})
-
-const stats = computed(() => {
-  return {
-    total: servers.value.length,
-    online: servers.value.filter(s => s.status === 'online').length,
-    warning: servers.value.filter(s => s.status === 'warning').length,
-    offline: servers.value.filter(s => s.status === 'offline').length
-  }
-})
+// Computed from Store
+const stats = serversStore.stats
 
 // Methods
 const goToDashboard = () => {
   router.push('/')
 }
 
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'online':
-      return CheckCircle
-    case 'warning':
-      return AlertTriangle
-    case 'offline':
-      return XCircle
-    default:
-      return Activity
-  }
+const handleClearFilters = () => {
+  clearFilters()
 }
 
-const getStatusClass = (status: string) => {
-  return `server-status-${status}`
-}
-
-const getResourceClass = (value: number) => {
-  if (value >= 90) return 'resource-critical'
-  if (value >= 70) return 'resource-warning'
-  return 'resource-normal'
-}
-
-const restartServer = (id: number) => {
-  const server = servers.value.find(s => s.id === id)
+const restartServer = async (id: number) => {
+  const server = serversStore.getServerById(id)
   if (server && confirm(`Are you sure you want to restart ${server.name}?`)) {
-    console.log('Restarting server:', server.name)
+    await serversStore.restartServer(id)
   }
 }
 
-const stopServer = (id: number) => {
-  const server = servers.value.find(s => s.id === id)
+const stopServer = async (id: number) => {
+  const server = serversStore.getServerById(id)
   if (server && confirm(`Are you sure you want to stop ${server.name}?`)) {
-    console.log('Stopping server:', server.name)
+    await serversStore.stopServer(id)
   }
 }
 
 const refreshServer = (id: number) => {
-  console.log('Refreshing server data:', id)
+  serversStore.refreshServer(id)
 }
 
-const viewServerDetails = (server: typeof servers.value[0]) => {
+const viewServerDetails = (server: ServerType) => {
+  serversStore.setSelectedServer(server)
   selectedServer.value = server
+}
+
+const closeModal = () => {
+  selectedServer.value = null
+  serversStore.setSelectedServer(null)
 }
 </script>
 
@@ -235,7 +103,7 @@ const viewServerDetails = (server: typeof servers.value[0]) => {
         <p class="header-description">监控和管理服务器基础设施</p>
       </div>
       <div class="header-actions">
-        <button class="action-btn" @click="() => { searchQuery = ''; selectedStatus = 'All'; selectedEnvironment = 'All' }">
+        <button class="action-btn" @click="handleClearFilters" :disabled="!hasActiveFilters">
           <Filter :size="14" />
           清除筛选
         </button>
@@ -468,11 +336,11 @@ const viewServerDetails = (server: typeof servers.value[0]) => {
     </div>
 
     <!-- Server Details Modal -->
-    <div v-if="selectedServer" class="modal-overlay" @click="selectedServer = null">
+    <div v-if="selectedServer" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h2>Server Details</h2>
-          <button class="close-btn" @click="selectedServer = null">
+          <button class="close-btn" @click="closeModal">
             <X :size="20" />
           </button>
         </div>
@@ -528,16 +396,16 @@ const viewServerDetails = (server: typeof servers.value[0]) => {
           <div class="modal-actions">
             <button
               class="modal-action-btn"
-              @click="() => { refreshServer(selectedServer.id); selectedServer = null }"
+              @click="() => { selectedServer && refreshServer(selectedServer.id); closeModal() }"
             >
               <RefreshCw :size="16" />
               Refresh
             </button>
 
             <button
-              v-if="selectedServer.status !== 'offline'"
+              v-if="selectedServer && selectedServer.status !== 'offline'"
               class="modal-action-btn warning"
-              @click="() => { restartServer(selectedServer.id); selectedServer = null }"
+              @click="() => { selectedServer && restartServer(selectedServer.id); closeModal() }"
             >
               <RotateCcw :size="16" />
               Restart Server
@@ -545,7 +413,7 @@ const viewServerDetails = (server: typeof servers.value[0]) => {
 
             <button
               class="modal-action-btn close"
-              @click="selectedServer = null"
+              @click="closeModal"
             >
               Close
             </button>
@@ -645,8 +513,13 @@ const viewServerDetails = (server: typeof servers.value[0]) => {
   transition: all 0.2s ease;
 }
 
-.action-btn:hover {
+.action-btn:hover:not(:disabled) {
   border-color: var(--primary-green);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .action-btn.primary {

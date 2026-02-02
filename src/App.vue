@@ -30,6 +30,16 @@ onMounted(() => {
   console.log('⚙️  Preferences loaded')
   console.log('🤖 ClawdBot AI Assistant ready')
 })
+
+// Watch route changes for debugging
+import { watch } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
+watch(() => route.path, (newPath, oldPath) => {
+  console.log(`Route changed: ${oldPath} → ${newPath}`)
+}, { immediate: true })
 </script>
 
 <template>
@@ -39,7 +49,9 @@ onMounted(() => {
       @open-terminal="handleOpenTerminal"
     />
     <main class="main-content">
-      <RouterView />
+      <RouterView :key="$route.fullPath" v-slot="{ Component }">
+        <component :is="Component" />
+      </RouterView>
     </main>
 
     <!-- Settings Panel -->

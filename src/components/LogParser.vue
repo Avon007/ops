@@ -1,101 +1,41 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { FileText, Download, Trash2, Search, Filter } from 'lucide-vue-next'
+import { FileText, Download, Trash2, Search } from 'lucide-vue-next'
 import type { SystemLog } from '@/types'
+import { useLogFilter, useLogFormatting, useLogExport } from '@/composables'
 
+// Props
 const props = defineProps<{
   logs: SystemLog[]
 }>()
 
-const searchText = ref('')
-const selectedLevel = ref<'ALL' | 'INFO' | 'WARN' | 'ERROR' | 'DEBUG'>('ALL')
-const selectedSystem = ref<string>('ALL')
+// Composables
+const {
+  searchText,
+  selectedLevel,
+  selectedSystem,
+  filteredLogs,
+  systems,
+  logStats,
+  clearFilters
+} = useLogFilter(() => props.logs)
 
-// 过滤后的日志
-const filteredLogs = computed(() => {
-  return props.logs.filter(log => {
-    const matchesSearch = !searchText.value ||
-      log.raw.toLowerCase().includes(searchText.value.toLowerCase()) ||
-      log.parsed?.message?.toLowerCase().includes(searchText.value.toLowerCase())
+const {
+  getLevelColor,
+  getFormatLabel,
+  formatLogContent,
+  formatTimestamp,
+  hasDetails
+} = useLogFormatting()
 
-    const matchesLevel = selectedLevel.value === 'ALL' || log.level === selectedLevel.value
-    const matchesSystem = selectedSystem.value === 'ALL' || log.systemId === selectedSystem.value
+const { exportLogs } = useLogExport()
 
-    return matchesSearch && matchesLevel && matchesSystem
-  })
-})
-
-// 获取唯一系统列表
-const systems = computed(() => {
-  const uniqueSystems = [...new Set(props.logs.map(log => log.systemId))]
-  return uniqueSystems
-})
-
-// 日志统计
-const logStats = computed(() => {
-  const stats = {
-    total: props.logs.length,
-    info: props.logs.filter(l => l.level === 'INFO').length,
-    warn: props.logs.filter(l => l.level === 'WARN').length,
-    error: props.logs.filter(l => l.level === 'ERROR').length,
-    debug: props.logs.filter(l => l.level === 'DEBUG').length
-  }
-  return stats
-})
-
-// 获取日志级别颜色
-const getLevelColor = (level: string) => {
-  const colors = {
-    INFO: 'text-blue-600 bg-blue-50 border-blue-200',
-    WARN: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-    ERROR: 'text-red-600 bg-red-50 border-red-200',
-    DEBUG: 'text-gray-600 bg-gray-50 border-gray-200'
-  }
-  return colors[level as keyof typeof colors] || colors.INFO
+// Methods
+const handleExport = () => {
+  exportLogs(filteredLogs.value)
 }
 
-// 获取日志格式标签
-const getFormatLabel = (format: string) => {
-  const labels = {
-    json: 'JSON',
-    xml: 'XML',
-    csv: 'CSV',
-    custom: 'CUSTOM',
-    syslog: 'SYSLOG'
-  }
-  return labels[format as keyof typeof labels] || format.toUpperCase()
-}
-
-// 解析日志显示
-const formatLogContent = (log: SystemLog) => {
-  if (log.format === 'json') {
-    try {
-      const parsed = JSON.parse(log.raw)
-      return JSON.stringify(parsed, null, 2)
-    } catch {
-      return log.raw
-    }
-  }
-  return log.raw
-}
-
-// 导出日志
-const exportLogs = () => {
-  const data = filteredLogs.value.map(log => log.raw).join('\n')
-  const blob = new Blob([data], { type: 'text/plain' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `logs-${new Date().toISOString()}.log`
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-// 清空日志
-const clearLogs = () => {
-  searchText.value = ''
-  selectedLevel.value = 'ALL'
-  selectedSystem.value = 'ALL'
+const handleClear = () => {
+  clearFilters()
 }
 </script>
 
@@ -108,11 +48,11 @@ const clearLogs = () => {
         <h2>日志解析工具</h2>
       </div>
       <div class="log-parser-actions">
-        <button class="btn-secondary" @click="exportLogs">
+        <button class="btn-secondary" @click="handleExport">
           <Download :size="16" />
           导出
         </button>
-        <button class="btn-secondary" @click="clearLogs">
+        <button class="btn-secondary" @click="handleClear">
           <Trash2 :size="16" />
           清空
         </button>
@@ -199,7 +139,7 @@ const clearLogs = () => {
             </span>
             <span class="log-system">{{ log.systemName }}</span>
             <span class="log-format">{{ getFormatLabel(log.format) }}</span>
-            <span class="log-time">{{ new Date(log.timestamp).toLocaleTimeString('zh-CN') }}</span>
+            <span class="log-time">{{ formatTimestamp(log.timestamp) }}</span>
           </div>
         </div>
 
@@ -212,16 +152,16 @@ const clearLogs = () => {
           <pre class="log-raw">{{ formatLogContent(log) }}</pre>
         </div>
 
-        <div class="log-details" v-if="log.parsed && Object.keys(log.parsed).length > 1">
-          <div class="detail-item" v-if="log.parsed.transactionId">
+        <div class="log-details" v-if="hasDetails(log)">
+          <div class="detail-item" v-if="log.parsed?.transactionId">
             <span class="detail-label">事务ID:</span>
             <span class="detail-value">{{ log.parsed.transactionId }}</span>
           </div>
-          <div class="detail-item" v-if="log.parsed.userId">
+          <div class="detail-item" v-if="log.parsed?.userId">
             <span class="detail-label">用户ID:</span>
             <span class="detail-value">{{ log.parsed.userId }}</span>
           </div>
-          <div class="detail-item" v-if="log.parsed.duration">
+          <div class="detail-item" v-if="log.parsed?.duration">
             <span class="detail-label">耗时:</span>
             <span class="detail-value">{{ log.parsed.duration }}ms</span>
           </div>

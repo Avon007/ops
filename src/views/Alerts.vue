@@ -1,5 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+/**
+ * Alerts View
+ * 告警管理页面
+ *
+ * 优化内容:
+ * 1. 使用 Pinia store 管理告警状态
+ * 2. 使用 composables 提取过滤和辅助逻辑
+ * 3. 简化组件，提高可维护性
+ * 4. 遵循 Vue 3 Composition API 最佳实践
+ */
+
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Search,
@@ -17,136 +28,40 @@ import {
   ExternalLink
 } from 'lucide-vue-next'
 
+// Store
+import { useAlertsStore } from '@/stores/alerts'
+
+// Composables
+import { useAlertFilter } from '@/composables/useAlertFilter'
+import { useAlertHelpers } from '@/composables/useAlertHelpers'
+
 const router = useRouter()
 
-// Filter options
-const alertLevels = ref(['All', 'Critical', 'High', 'Medium', 'Low'])
-const selectedLevel = ref('All')
-const searchQuery = ref('')
-const selectedStatus = ref('All') // All, Active, Resolved
+// Store
+const alertsStore = useAlertsStore()
 
-// Mock alert data
-const alerts = ref([
-  {
-    id: 1,
-    timestamp: '2026-01-29 14:32:15',
-    level: 'critical',
-    service: 'api-service',
-    title: 'Database Connection Failed',
-    message: 'Unable to establish connection to primary database server',
-    source: 'app-server-01',
-    status: 'active',
-    acknowledged: false,
-    affectedUsers: 1250
-  },
-  {
-    id: 2,
-    timestamp: '2026-01-29 14:28:42',
-    level: 'high',
-    service: 'payment-gateway',
-    title: 'Payment Processing Delay',
-    message: 'Payment transactions taking longer than 5 seconds',
-    source: 'payment-worker-02',
-    status: 'active',
-    acknowledged: true,
-    affectedUsers: 45
-  },
-  {
-    id: 3,
-    timestamp: '2026-01-29 14:25:18',
-    level: 'medium',
-    service: 'cache-service',
-    title: 'Cache Memory High',
-    message: 'Redis memory usage at 85%',
-    source: 'redis-01',
-    status: 'active',
-    acknowledged: false,
-    affectedUsers: 0
-  },
-  {
-    id: 4,
-    timestamp: '2026-01-29 14:20:33',
-    level: 'low',
-    service: 'background-worker',
-    title: 'Job Queue Backlog',
-    message: 'Background job queue has 150 pending jobs',
-    source: 'worker-03',
-    status: 'active',
-    acknowledged: true,
-    affectedUsers: 0
-  },
-  {
-    id: 5,
-    timestamp: '2026-01-29 14:15:21',
-    level: 'critical',
-    service: 'auth-service',
-    title: 'Authentication Failure Rate',
-    message: 'Authentication failure rate exceeds 10%',
-    source: 'auth-01',
-    status: 'resolved',
-    acknowledged: true,
-    affectedUsers: 89
-  },
-  {
-    id: 6,
-    timestamp: '2026-01-29 14:10:05',
-    level: 'high',
-    service: 'frontend-v2',
-    title: 'High Response Time',
-    message: 'API response time > 2s for /api/users endpoint',
-    source: 'cdn-node-03',
-    status: 'resolved',
-    acknowledged: true,
-    affectedUsers: 320
-  },
-  {
-    id: 7,
-    timestamp: '2026-01-29 14:05:18',
-    level: 'medium',
-    service: 'email-service',
-    title: 'Email Delivery Delayed',
-    message: 'Email queue processing delayed by 2 minutes',
-    source: 'email-worker-01',
-    status: 'active',
-    acknowledged: false,
-    affectedUsers: 12
-  },
-  {
-    id: 8,
-    timestamp: '2026-01-29 14:00:12',
-    level: 'low',
-    service: 'monitoring-service',
-    title: 'Disk Space Warning',
-    message: 'Server disk usage at 75%',
-    source: 'app-server-02',
-    status: 'active',
-    acknowledged: false,
-    affectedUsers: 0
-  }
-])
+// Composables
+const {
+  alertLevels,
+  selectedLevel,
+  selectedStatus,
+  searchQuery,
+  filteredAlerts,
+  hasActiveFilters,
+  clearFilters
+} = useAlertFilter(() => alertsStore.alerts)
 
-const selectedAlert = ref<typeof alerts.value[0] | null>(null)
+const {
+  getLevelIcon,
+  getLevelClass,
+  getStatusBadgeClass
+} = useAlertHelpers()
 
 // Computed
-const filteredAlerts = computed(() => {
-  return alerts.value.filter(alert => {
-    const matchesLevel = selectedLevel.value === 'All' || alert.level === selectedLevel.value.toLowerCase()
-    const matchesStatus = selectedStatus.value === 'All' || alert.status === selectedStatus.value.toLowerCase()
-    const matchesSearch = searchQuery.value === '' ||
-      alert.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      alert.service.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      alert.message.toLowerCase().includes(searchQuery.value.toLowerCase())
-    return matchesLevel && matchesStatus && matchesSearch
-  })
-})
-
-const stats = computed(() => {
-  return {
-    total: alerts.value.filter(a => a.status === 'active').length,
-    critical: alerts.value.filter(a => a.level === 'critical' && a.status === 'active').length,
-    high: alerts.value.filter(a => a.level === 'high' && a.status === 'active').length,
-    resolved: alerts.value.filter(a => a.status === 'resolved').length
-  }
+const stats = computed(() => alertsStore.stats)
+const selectedAlert = computed({
+  get: () => alertsStore.selectedAlert,
+  set: (value) => alertsStore.setSelectedAlert(value?.id || null)
 })
 
 // Methods
@@ -154,45 +69,16 @@ const goToDashboard = () => {
   router.push('/')
 }
 
-const getLevelIcon = (level: string) => {
-  switch (level) {
-    case 'critical':
-      return AlertCircle
-    case 'high':
-      return AlertTriangle
-    case 'medium':
-      return Bell
-    case 'low':
-      return Info
-    default:
-      return Bell
-  }
-}
-
-const getLevelClass = (level: string) => {
-  return `alert-level-${level}`
-}
-
 const acknowledgeAlert = (id: number) => {
-  const alert = alerts.value.find(a => a.id === id)
-  if (alert) {
-    alert.acknowledged = true
-  }
+  alertsStore.acknowledgeAlert(id)
 }
 
-const resolveAlert = (id: number) => {
-  const alert = alerts.value.find(a => a.id === id)
-  if (alert) {
-    alert.status = 'resolved'
-  }
+const resolveAlert = async (id: number) => {
+  await alertsStore.resolveAlert(id)
 }
 
-const viewAlertDetails = (alert: typeof alerts.value[0]) => {
-  selectedAlert.value = alert
-}
-
-const getStatusBadgeClass = (status: string) => {
-  return status === 'active' ? 'status-active' : 'status-resolved'
+const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
+  alertsStore.setSelectedAlert(alert.id)
 }
 </script>
 
@@ -211,7 +97,7 @@ const getStatusBadgeClass = (status: string) => {
         <p class="header-description">监控和管理系统告警及事件</p>
       </div>
       <div class="header-actions">
-        <button class="action-btn" @click="() => { searchQuery = ''; selectedLevel = 'All'; selectedStatus = 'All' }">
+        <button class="action-btn" @click="clearFilters" :disabled="!hasActiveFilters">
           <Filter :size="14" />
           清除筛选
         </button>
@@ -544,8 +430,13 @@ const getStatusBadgeClass = (status: string) => {
   transition: all 0.2s ease;
 }
 
-.action-btn:hover {
+.action-btn:hover:not(:disabled) {
   border-color: var(--primary-green);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .action-btn.primary {

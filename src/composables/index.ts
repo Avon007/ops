@@ -34,6 +34,10 @@ export { useLogExport } from './useLogExport'
 export { useServerFilter } from './useServerFilter'
 export { useServerHelpers } from './useServerHelpers'
 
+// Alerts
+export { useAlertFilter } from './useAlertFilter'
+export { useAlertHelpers } from './useAlertHelpers'
+
 // 类型导出
 export type { DeploymentStatus } from './useDeployment'
 export type { TerminalMessage } from './useTerminalState'

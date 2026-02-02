@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import {
   Search,
   Filter,
+  FileText,
   Download,
   RefreshCw,
   AlertTriangle,

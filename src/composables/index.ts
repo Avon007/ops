@@ -38,6 +38,12 @@ export { useServerHelpers } from './useServerHelpers'
 export { useAlertFilter } from './useAlertFilter'
 export { useAlertHelpers } from './useAlertHelpers'
 
+// Tracing
+export { useTracingHelpers } from './useTracingHelpers'
+
+// Deployments
+export { useDeploymentHelpers } from './useDeploymentHelpers'
+
 // 类型导出
 export type { DeploymentStatus } from './useDeployment'
 export type { TerminalMessage } from './useTerminalState'

@@ -1,84 +1,45 @@
 <script setup lang="ts">
+/**
+ * Deployments View
+ * 部署管理页面
+ *
+ * 优化内容:
+ * 1. 使用 Pinia store 管理部署状态
+ * 2. 使用 composables 提取辅助逻辑
+ * 3. 简化组件，提高可维护性
+ * 4. 遵循 Vue 3 Composition API 最佳实践
+ */
+
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Eye, RefreshCw, RotateCcw, ChevronLeft, ChevronRight, Rocket } from 'lucide-vue-next'
 
+// Store
+import { useDeploymentsStore } from '@/stores/deployments'
+
+// Composables
+import { useDeploymentHelpers } from '@/composables/useDeploymentHelpers'
+
 const router = useRouter()
 
-// Metrics data
-const metrics = ref([
-  {
-    label: 'Total Deployments',
-    value: '1,284',
-    change: '+12% this month',
-    trend: 'up'
-  },
-  {
-    label: 'Active Deployments',
-    value: '47',
-    status: 'All systems operational'
-  },
-  {
-    label: 'Success Rate',
-    value: '98.5%',
-    change: '+2.3% improvement',
-    trend: 'up'
-  },
-  {
-    label: 'Failed Deployments',
-    value: '3',
-    change: '-5 from last week',
-    trend: 'down'
-  }
-])
+// Store
+const deploymentsStore = useDeploymentsStore()
 
-// Deployment data
-const deployments = ref([
-  {
-    id: 1,
-    name: 'frontend-v2.4.1',
-    environment: 'Production',
-    status: 'success',
-    date: 'Jan 29, 2026',
-    duration: '2m 34s'
-  },
-  {
-    id: 2,
-    name: 'api-service-v3.1.0',
-    environment: 'Staging',
-    status: 'deploying',
-    date: 'Jan 29, 2026',
-    duration: '1m 12s'
-  },
-  {
-    id: 3,
-    name: 'backend-v1.8.5',
-    environment: 'Production',
-    status: 'success',
-    date: 'Jan 28, 2026',
-    duration: '3m 45s'
-  },
-  {
-    id: 4,
-    name: 'mobile-app-v2.0.3',
-    environment: 'Development',
-    status: 'failed',
-    date: 'Jan 28, 2026',
-    duration: '0m 45s'
-  },
-  {
-    id: 5,
-    name: 'auth-service-v4.2.1',
-    environment: 'Production',
-    status: 'success',
-    date: 'Jan 27, 2026',
-    duration: '1m 56s'
-  }
-])
+// Composables
+const {
+  getStatusClass,
+  getStatusText,
+  canRetry,
+  canRollback
+} = useDeploymentHelpers()
 
-const currentPage = ref(1)
-const totalPages = 3
+// Computed
+const metrics = deploymentsStore.metrics
+const deployments = deploymentsStore.deployments
+const currentPage = deploymentsStore.currentPage
+const totalPages = deploymentsStore.totalPages
 
+// Methods
 const goToDashboard = () => {
   router.push('/')
 }
@@ -91,38 +52,16 @@ const viewDeployment = (id: number) => {
   console.log('Viewing deployment:', id)
 }
 
-const retryDeployment = (id: number) => {
-  console.log('Retrying deployment:', id)
+const retryDeployment = async (id: number) => {
+  await deploymentsStore.retryDeployment(id)
 }
 
-const rollbackDeployment = (id: number) => {
-  console.log('Rolling back deployment:', id)
+const rollbackDeployment = async (id: number) => {
+  await deploymentsStore.rollbackDeployment(id)
 }
 
-const getStatusClass = (status: string) => {
-  switch (status) {
-    case 'success':
-      return 'status-success'
-    case 'deploying':
-      return 'status-deploying'
-    case 'failed':
-      return 'status-failed'
-    default:
-      return ''
-  }
-}
-
-const getStatusText = (status: string) => {
-  switch (status) {
-    case 'success':
-      return 'Success'
-    case 'deploying':
-      return 'Deploying'
-    case 'failed':
-      return 'Failed'
-    default:
-      return status
-  }
+const setCurrentPage = (page: number) => {
+  deploymentsStore.setCurrentPage(page)
 }
 </script>
 
@@ -206,13 +145,13 @@ const getStatusText = (status: string) => {
               <td class="actions-cell">
                 <Eye :size="16" class="action-icon" @click="viewDeployment(deployment.id)" />
                 <RefreshCw
-                  v-if="deployment.status === 'failed'"
+                  v-if="canRetry(deployment.status)"
                   :size="16"
                   class="action-icon action-retry"
                   @click="retryDeployment(deployment.id)"
                 />
                 <RotateCcw
-                  v-if="deployment.status === 'success'"
+                  v-if="canRollback(deployment.status)"
                   :size="16"
                   class="action-icon"
                   @click="rollbackDeployment(deployment.id)"
@@ -226,9 +165,14 @@ const getStatusText = (status: string) => {
       <!-- Pagination -->
       <div class="pagination">
         <ChevronLeft :size="16" class="pagination-arrow" />
-        <div :class="['page-number', { active: currentPage === 1 }]">1</div>
-        <div :class="['page-number', { active: currentPage === 2 }]">2</div>
-        <div :class="['page-number', { active: currentPage === 3 }]">3</div>
+        <div
+          v-for="page in totalPages"
+          :key="page"
+          :class="['page-number', { active: currentPage === page }]"
+          @click="setCurrentPage(page)"
+        >
+          {{ page }}
+        </div>
         <ChevronRight :size="16" class="pagination-arrow" />
       </div>
     </div>

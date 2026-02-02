@@ -1,19 +1,55 @@
 <script setup lang="ts">
+/**
+ * Tracing Analysis View
+ * 全链路追踪页面
+ *
+ * 优化内容:
+ * 1. 使用 Pinia store 管理追踪状态
+ * 2. 使用 composables 提取辅助逻辑
+ * 3. 简化组件，提高可维护性
+ * 4. 遵循 Vue 3 Composition API 最佳实践
+ */
+
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { GitBranch, Search, CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, Clock } from 'lucide-vue-next'
-import { traces } from '@/mock/monitoringData'
+import {
+  GitBranch,
+  Search,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Clock
+} from 'lucide-vue-next'
+
+// Store
+import { useTracingStore } from '@/stores/tracing'
+
+// Composables
+import { useTracingHelpers } from '@/composables/useTracingHelpers'
 
 const router = useRouter()
+
+// Store
+const tracingStore = useTracingStore()
+
+// Composables
+const {
+  getStatusIcon,
+  getStatusColor,
+  getStatusBg,
+  formatDuration,
+  formatTime,
+  formatTimeShort,
+  getTraceCardClass
+} = useTracingHelpers()
 
 // State
 const searchQuery = ref('')
 const selectedStatus = ref<'All' | 'success' | 'error' | 'timeout'>('All')
-const expandedTraceId = ref<string | null>(null)
 
 // Computed
 const filteredTraces = computed(() => {
-  return traces.filter(trace => {
+  return tracingStore.traces.filter(trace => {
     const matchesStatus = selectedStatus.value === 'All' || trace.status === selectedStatus.value
     const matchesSearch = searchQuery.value === '' ||
       trace.traceId.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -23,14 +59,7 @@ const filteredTraces = computed(() => {
   })
 })
 
-const stats = computed(() => {
-  return {
-    total: traces.length,
-    success: traces.filter(t => t.status === 'success').length,
-    error: traces.filter(t => t.status === 'error').length,
-    timeout: traces.filter(t => t.status === 'timeout').length
-  }
-})
+const stats = computed(() => tracingStore.stats)
 
 // Methods
 const navigateToDashboard = () => {
@@ -38,52 +67,7 @@ const navigateToDashboard = () => {
 }
 
 const toggleTrace = (traceId: string) => {
-  if (expandedTraceId.value === traceId) {
-    expandedTraceId.value = null
-  } else {
-    expandedTraceId.value = traceId
-  }
-}
-
-const getStatusIcon = (status: string) => {
-  const icons = {
-    success: CheckCircle,
-    error: XCircle,
-    timeout: AlertTriangle
-  }
-  return icons[status as keyof typeof icons] || CheckCircle
-}
-
-const getStatusColor = (status: string) => {
-  const colors = {
-    success: 'status-success',
-    error: 'status-error',
-    timeout: 'status-warning'
-  }
-  return colors[status as keyof typeof colors] || colors.success
-}
-
-const getStatusBg = (status: string) => {
-  const colors = {
-    success: 'status-bg-success',
-    error: 'status-bg-error',
-    timeout: 'status-bg-warning'
-  }
-  return colors[status as keyof typeof colors] || colors.success
-}
-
-const formatDuration = (ms: number) => {
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-  return `${(ms / 1000).toFixed(0)}s`
-}
-
-const formatTime = (timestamp: string) => {
-  return new Date(timestamp).toLocaleString('zh-CN')
-}
-
-const formatTimeShort = (timestamp: string) => {
-  return new Date(timestamp).toLocaleTimeString('zh-CN')
+  tracingStore.toggleTrace(traceId)
 }
 </script>
 
@@ -161,7 +145,7 @@ const formatTimeShort = (timestamp: string) => {
         v-for="trace in filteredTraces"
         :key="trace.traceId"
         class="trace-card"
-        :class="`trace-${trace.status}`"
+        :class="getTraceCardClass(trace.status)"
       >
         <!-- Trace Header -->
         <div class="trace-header" @click="toggleTrace(trace.traceId)">
@@ -187,7 +171,7 @@ const formatTimeShort = (timestamp: string) => {
               {{ trace.status.toUpperCase() }}
             </div>
             <component
-              :is="expandedTraceId === trace.traceId ? ChevronUp : ChevronDown"
+              :is="tracingStore.expandedTraceId === trace.traceId ? ChevronUp : ChevronDown"
               :size="16"
               class="expand-icon"
             />
@@ -195,7 +179,7 @@ const formatTimeShort = (timestamp: string) => {
         </div>
 
         <!-- Trace Details (Expanded) -->
-        <div v-if="expandedTraceId === trace.traceId" class="trace-details">
+        <div v-if="tracingStore.expandedTraceId === trace.traceId" class="trace-details">
           <div class="detail-row">
             <span class="detail-label">追踪时间:</span>
             <span class="detail-value">{{ formatTime(trace.timestamp) }}</span>

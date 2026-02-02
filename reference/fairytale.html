@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>运维监控中心 - Dev_Assist_V2</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #5ebf84; /* 截图中的浅绿色 */
+            --dark-green: #449e6b;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #888888;
+            --sidebar-width: 260px;
+            --terminal-bg: #1e1e1e;
+            --status-online: #4caf50;
+            --status-warning: #ff9800;
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            height: 100vh;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            height: 100%;
+        }
+
+        .logo-area {
+            margin-bottom: 30px;
+        }
+        
+        .logo-icon {
+            background: var(--primary-green);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .app-name {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #444;
+        }
+
+        .system-status {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            background-color: var(--status-online);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: var(--status-online);
+            font-weight: bold;
+        }
+
+        .clock {
+            font-size: 20px;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #666;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #f0f0f0;
+        }
+
+        .nav-link.active {
+            background-color: #e6f6eb; /* 选中态浅绿背景 */
+            color: var(--dark-green);
+            font-weight: 600;
+            border-left: 3px solid var(--dark-green);
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .breadcrumbs {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .page-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .action-buttons button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        .btn-default {
+            background: white;
+            border: 1px solid #ddd;
+            color: #666;
+        }
+
+        .btn-primary {
+            background: var(--dark-green);
+            color: white;
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid var(--status-online);
+        }
+        .alert-tag {
+            background: #198754;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .metric-header {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 5px;
+        }
+
+        .metric-trend {
+            font-size: 12px;
+        }
+        .trend-down { color: #dc3545; }
+        .trend-up { color: var(--status-online); }
+
+        /* Dashboard Lower Grid */
+        .dashboard-lower {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* Left 2/3, Right 1/3 */
+            gap: 20px;
+            flex: 1;
+        }
+
+        /* Terminal Style */
+        .terminal-card {
+            background: var(--terminal-bg);
+            border-radius: var(--border-radius);
+            color: #d4d4d4;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: 'Consolas', 'Monaco', monospace;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            min-height: 400px;
+        }
+
+        .terminal-header {
+            background: #2d2d2d;
+            padding: 10px 15px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .status-badge {
+            background: #0e639c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+        }
+
+        .terminal-body {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .cmd-section-title {
+            color: #569cd6; /* VS Code Blue */
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .cmd-list {
+            list-style: none;
+            margin-bottom: 20px;
+            padding-left: 10px;
+        }
+
+        .cmd-list li {
+            margin-bottom: 4px;
+        }
+
+        .cmd-list li::before {
+            content: "•";
+            color: #6a9955;
+            margin-right: 8px;
+        }
+
+        .cmd-keyword {
+            color: #dcdcaa; /* Light yellow */
+        }
+
+        .terminal-input-area {
+            background: #252526;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #333;
+        }
+
+        .terminal-prompt {
+            color: var(--primary-green);
+            margin-right: 10px;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: white;
+            flex: 1;
+            font-family: monospace;
+            outline: none;
+        }
+
+        /* Right Column (Server Status + Logs) */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-filter-btn {
+            font-size: 12px;
+            padding: 4px 8px;
+            border: 1px solid #eee;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Server List Table */
+        .server-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .server-row:last-child { border-bottom: none; }
+
+        .server-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .server-ip {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .status-pill {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .pill-online { color: var(--status-online); background: #e8f5e9; }
+        .pill-warning { color: var(--status-warning); background: #fff3e0; }
+
+        /* Activity Log */
+        .log-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .log-item:last-child { border-bottom: none; margin-bottom: 0; }
+
+        .log-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+        .log-desc {
+            font-size: 12px;
+            color: #666;
+        }
+        .log-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 10px;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+        .log-type-err { color: #dc3545; font-weight: bold;}
+        .log-type-success { color: var(--status-online); font-weight: bold;}
+        .log-type-warn { color: var(--status-warning); font-weight: bold;}
+
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">OPS</div>
+            <div class="app-name">DEV_ASSIST_V2</div>
+        </div>
+
+        <div class="system-status">
+            <div class="nav-label">SYSTEM_STATUS</div>
+            <div>
+                <span class="status-dot"></span>
+                <span class="status-text">ONLINE</span>
+            </div>
+            <div class="clock" id="utc-clock">00:00:00 UTC</div>
+        </div>
+
+        <div class="nav-label">NAV_MODULES</div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="#" class="nav-link active"><i class="fas fa-th-large"></i> DASHBOARD</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-network-wired"></i> TRACING</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-server"></i> SERVERS</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-exclamation-triangle"></i> ALERTS</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="far fa-file-alt"></i> LOGS</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-cube"></i> DEPLOYMENTS</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-brain"></i> SKILLS</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header>
+            <div class="page-header">
+                <div>
+                    <div class="breadcrumbs">// OPS_CENTER > OVERVIEW > DASHBOARD</div>
+                    <div class="page-title"><h1>运维监控中心</h1></div>
+                    <div class="page-subtitle">实时监控系统状态 · 自动告警响应 · 快速故障排查</div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-default"><i class="fas fa-sync-alt"></i> REFRESH</button>
+                    <button class="btn-primary"><i class="fas fa-rocket"></i> DEPLOY</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="alert-banner">
+            <span class="alert-tag">ALERT</span>
+            3 servers require attention - CPU usage above 90% on app-server-02
+            <i class="fas fa-times" style="margin-left: auto; cursor: pointer;"></i>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span>SYSTEM_HEALTH</span>
+                    <span class="status-dot" style="background:#ff9800;"></span>
+                </div>
+                <div class="metric-value">85%</div>
+                <div class="metric-trend trend-down">↓ 5%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span>INTEGRATION_STATUS</span>
+                    <span class="status-dot" style="background:#ff9800;"></span>
+                </div>
+                <div class="metric-value">12/15</div>
+                <div class="metric-trend trend-down">↓ 3%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span>ACTIVE_TRANSACTIONS</span>
+                    <span class="status-dot" style="background:#4caf50;"></span>
+                </div>
+                <div class="metric-value">1,245</div>
+                <div class="metric-trend trend-up">↑ 120%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span>ERROR_RATE</span>
+                    <span class="status-dot" style="background:#ff9800;"></span>
+                </div>
+                <div class="metric-value">2.3%</div>
+                <div class="metric-trend trend-up">↑ 0.8%</div>
+            </div>
+        </div>
+
+        <div class="dashboard-lower">
+            
+            <div class="terminal-card">
+                <div class="terminal-header">
+                    <span>>_ Operations Terminal</span>
+                    <span class="status-badge">● 就绪</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="cmd-section-title"><i class="fas fa-book"></i> 运维助手命令参考</div>
+                    
+                    <div style="margin-bottom: 10px; color: #569cd6;">🔍 自然语言命令:</div>
+                    <ul class="cmd-list">
+                        <li>查看系统状态 - <span style="color:#808080">查看所有信息系统健康状态</span></li>
+                        <li>全链路数据分析 - <span style="color:#808080">完整的性能和容量分析</span></li>
+                        <li>分析系统集成故障 - <span style="color:#808080">诊断系统集成问题</span></li>
+                        <li>容量规划 - <span style="color:#808080">资源预测和扩容建议</span></li>
+                        <li>技能库 - <span style="color:#808080">查看专家技能库</span></li>
+                        <li>依赖拓扑 - <span style="color:#808080">查看系统依赖关系图</span></li>
+                        <li>安全设备 - <span style="color:#808080">查看安全隔离装置状态</span></li>
+                    </ul>
+
+                    <div style="margin-bottom: 10px; color: #569cd6;">💻 命令行命令:</div>
+                    <ul class="cmd-list">
+                        <li><span class="cmd-keyword">analyze</span> - 执行全链路分析</li>
+                        <li><span class="cmd-keyword">full-analysis</span> - 完整数据分析报告</li>
+                        <li><span class="cmd-keyword">root-cause [id]</span> - 根因分析</li>
+                        <li><span class="cmd-keyword">topology</span> - 查看系统依赖拓扑</li>
+                        <li><span class="cmd-keyword">diagnose</span> - 诊断系统故障</li>
+                    </ul>
+                </div>
+                <div class="terminal-input-area">
+                    <span class="terminal-prompt">></span>
+                    <input type="text" class="terminal-input" placeholder="输入命令或自然语言问题...">
+                    <button style="background:none; border:none; color:#4caf50;"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+
+            <div class="right-column">
+                
+                <div class="info-card">
+                    <div class="card-title">
+                        <span>Server Status</span>
+                        <button class="card-filter-btn"><i class="fas fa-filter"></i> FILTER</button>
+                    </div>
+                    
+                    <div class="server-list">
+                        <div class="server-row">
+                            <div>
+                                <div class="server-name">app-server-01</div>
+                                <div class="server-ip">192.168.1.101</div>
+                            </div>
+                            <span class="status-pill pill-online">ONLINE</span>
+                        </div>
+                        <div class="server-row">
+                            <div>
+                                <div class="server-name">app-server-02</div>
+                                <div class="server-ip">192.168.1.102</div>
+                            </div>
+                            <span class="status-pill pill-warning">WARNING</span>
+                        </div>
+                        <div class="server-row">
+                            <div>
+                                <div class="server-name">db-server-01</div>
+                                <div class="server-ip">192.168.1.201</div>
+                            </div>
+                            <span class="status-pill pill-online">ONLINE</span>
+                        </div>
+                         <div class="server-row">
+                            <div>
+                                <div class="server-name">cache-server-01</div>
+                                <div class="server-ip">192.168.1.301</div>
+                            </div>
+                            <span class="status-pill pill-online">ONLINE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card" style="flex:1;">
+                    <div class="card-title">
+                        <span>Activity Log</span>
+                        <span style="font-size:10px; color:var(--primary-green); cursor:pointer;">VIEW ALL >></span>
+                    </div>
+
+                    <div class="log-item">
+                        <div class="log-title">数据同步失败</div>
+                        <div class="log-desc">CRM系统到数据中台的同步任务超时</div>
+                        <div class="log-meta">
+                            <span class="log-type-err">INTEGRATION</span>
+                        </div>
+                    </div>
+
+                    <div class="log-item">
+                        <div class="log-title">请假单同步失败</div>
+                        <div class="log-desc">OA系统到ERP系统的接口返回500错误</div>
+                        <div class="log-meta">
+                            <span class="log-type-err">INTEGRATION</span>
+                        </div>
+                    </div>
+
+                    <div class="log-item">
+                        <div class="log-title">库存数据不一致</div>
+                        <div class="log-desc">MES系统检测到ERP和MES库存数据差异</div>
+                        <div class="log-meta">
+                            <span class="log-type-warn">DATA</span>
+                        </div>
+                    </div>
+
+                     <div class="log-item">
+                        <div class="log-title">订单支付成功</div>
+                        <div class="log-desc">订单ORD-20250129-001支付完成</div>
+                        <div class="log-meta">
+                            <span class="log-type-success">PAYMENT</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Simple Clock Function
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toISOString().split('T')[1].split('.')[0] + " UTC";
+            document.getElementById('utc-clock').innerText = timeString;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Simple interactive terminal input (Visual only)
+        const input = document.querySelector('.terminal-input');
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                alert('命令已发送: ' + this.value);
+                this.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

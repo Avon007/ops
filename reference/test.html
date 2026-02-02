@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专家技能知识库 - Dev_Assist_V2</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           1. 全局样式变量与重置 (CSS Reset)
+           ========================================= */
+        :root {
+            /* 核心配色 - 提取自截图 */
+            --primary-green: #449e6b;      /* 按钮和图标深绿 */
+            --light-green: #e6f6eb;        /* 选中态背景浅绿 */
+            --bg-body: #f5f7fa;            /* 页面灰底 */
+            --bg-white: #ffffff;           /* 卡片白底 */
+            --text-main: #333333;          /* 主标题 */
+            --text-gray: #666666;          /* 次要文字 */
+            --text-light: #999999;         /* 辅助文字 */
+            --border-radius: 8px;          /* 圆角 */
+            --sidebar-width: 260px;        /* 侧边栏宽度 */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            display: flex;
+            height: 100vh;
+            color: var(--text-main);
+            overflow: hidden; /* 防止整个页面出现双滚动条 */
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* =========================================
+           2. 侧边栏样式 (Sidebar)
+           ========================================= */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-white);
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            height: 100%;
+            flex-shrink: 0;
+        }
+
+        .logo-area { margin-bottom: 30px; }
+        .logo-icon {
+            background: #5ebf84; /* LOGO稍微亮一点的绿 */
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .app-name { font-size: 14px; font-weight: 600; letter-spacing: 1px; color: #444; }
+
+        .system-status {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .nav-label {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            margin: 15px 0 10px 0;
+            font-weight: 600;
+        }
+        .status-dot {
+            height: 8px; width: 8px;
+            background-color: #4caf50;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .clock { font-size: 20px; font-weight: 500; margin-top: 5px; }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: var(--text-gray);
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        .nav-link:hover { background-color: #f0f0f0; }
+        
+        /* 选中状态 */
+        .nav-link.active {
+            background-color: var(--light-green);
+            color: var(--primary-green);
+            font-weight: 600;
+            border-left: 3px solid var(--primary-green);
+        }
+        .nav-link i { width: 24px; text-align: center; margin-right: 8px; }
+
+        /* =========================================
+           3. 主内容区样式 (Main Content)
+           ========================================= */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto; /* 内容区独立滚动 */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 头部 Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .breadcrumbs { font-size: 12px; color: var(--text-light); margin-bottom: 5px; text-transform: uppercase; }
+        .page-title h1 { font-size: 28px; margin-bottom: 5px; font-weight: 700; color: #333; }
+        .page-subtitle { color: var(--text-gray); font-size: 14px; }
+
+        /* 按钮 */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-primary { 
+            background: #449e6b; /* 截图中的深绿色按钮 */
+            color: white; 
+        }
+        .btn-primary:hover { background: #368056; }
+        .btn-block { width: 100%; padding: 10px; }
+
+        /* Tabs 标签页 */
+        .tabs-header {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 25px;
+            background: transparent;
+        }
+        .tab-item {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-item:hover { color: var(--primary-green); }
+        .tab-item.active {
+            color: var(--primary-green);
+            border-bottom-color: var(--primary-green);
+            font-weight: bold;
+        }
+
+        /* =========================================
+           4. 技能卡片网格样式 (Skills Grid)
+           ========================================= */
+        .skills-grid {
+            display: grid;
+            /* 响应式网格，类似截图每行3-4个 */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding-bottom: 40px;
+        }
+
+        .skill-card {
+            background: var(--bg-white);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid transparent;
+        }
+        
+        .skill-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-color: #eee;
+        }
+
+        /* 右上角标签 "系统模板" */
+        .card-tag {
+            position: absolute;
+            top: 15px; right: 15px;
+            font-size: 11px; 
+            color: #999;
+            background: #f8f8f8; 
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        /* 卡片头部 */
+        .skill-header {
+            padding: 25px 20px 10px 20px;
+        }
+
+        /* 图标容器 - 浅绿底深绿标 */
+        .skill-icon-box {
+            width: 42px; height: 42px;
+            background: #eef7f2; 
+            color: var(--primary-green);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; margin-bottom: 15px;
+        }
+
+        .skill-title { font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #333; }
+        .skill-desc { font-size: 12px; color: #888; line-height: 1.5; min-height: 36px; }
+
+        /* 数据统计区 (适用场景 / 使用次数) */
+        .skill-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            margin: 10px 20px;
+            background: #fcfcfc;
+            border-radius: 6px;
+        }
+        .stat-item { text-align: center; }
+        .stat-num { 
+            display: block; 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: #4ebf86; /* 截图中的数字绿色 */
+            margin-bottom: 2px;
+        }
+        .stat-label { font-size: 11px; color: #aaa; }
+
+        /* 底部详情列表 */
+        .skill-tags-list {
+            padding: 0 20px 20px 20px;
+            flex: 1;
+        }
+        .mini-tag {
+            display: block;
+            font-size: 12px; color: #666;
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            background: #f9f9f9;
+            border-radius: 3px;
+        }
+
+        /* 卡片底部按钮区 */
+        .skill-action {
+            padding: 15px 20px;
+            border-top: 1px solid #f0f0f0;
+            margin-top: auto; /* 保证按钮始终在底部 */
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">OPS</div>
+            <div class="app-name">DEV_ASSIST_V2</div>
+        </div>
+
+        <div class="system-status">
+            <div class="nav-label">SYSTEM_STATUS</div>
+            <div>
+                <span class="status-dot"></span>
+                <span style="font-size: 12px; color: #4caf50; font-weight: bold;">ONLINE</span>
+            </div>
+            <div class="clock" id="utc-clock">10:08:48 UTC</div>
+        </div>
+
+        <div class="nav-label">NAV_MODULES</div>
+        <ul class="nav-menu">
+            <li class="nav-item"><div class="nav-link"><i class="fas fa-th-large"></i> DASHBOARD</div></li>
+            <li class="nav-item"><div class="nav-link"><i class="fas fa-network-wired"></i> TRACING</div></li>
+            <li class="nav-item"><div class="nav-link"><i class="fas fa-server"></i> SERVERS</div></li>
+            <li class="nav-item"><div class="nav-link"><i class="fas fa-exclamation-triangle"></i> ALERTS</div></li>
+            <li class="nav-item"><div class="nav-link"><i class="far fa-file-alt"></i> LOGS</div></li>
+            <li class="nav-item"><div class="nav-link"><i class="fas fa-cube"></i> DEPLOYMENTS</div></li>
+            <li class="nav-item"><div class="nav-link active"><i class="fas fa-brain"></i> SKILLS</div></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        
+        <header>
+            <div class="page-header">
+                <div>
+                    <div class="breadcrumbs">// OPS_CENTER > KNOWLEDGE > SKILLS</div>
+                    <div class="page-title"><h1>专家技能知识库</h1></div>
+                    <div class="page-subtitle">管理和执行诊断技能规则</div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary"><i class="fas fa-plus"></i> 创建技能</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="tabs-header">
+            <div class="tab-item"><i class="far fa-user"></i> 我的技能 (6)</div>
+            <div class="tab-item active"><i class="far fa-file-alt"></i> 模板库 (7)</div>
+            <div class="tab-item"><i class="fas fa-history"></i> 执行历史 (2)</div>
+        </div>
+
+        <div class="skills-grid">
+            
+            <div class="skill-card">
+                <span class="card-tag">系统模板</span>
+                <div class="skill-header">
+                    <div class="skill-icon-box"><i class="fas fa-chart-line"></i></div>
+                    <div class="skill-title">性能问题诊断模板</div>
+                    <div class="skill-desc">用于诊断系统性能问题的通用模板</div>
+                </div>
+                <div class="skill-stats">
+                    <div class="stat-item"><span class="stat-num">4</span><span class="stat-label">适用场景</span></div>
+                    <div class="stat-item"><span class="stat-num">15</span><span class="stat-label">使用次数</span></div>
+                </div>
+                <div class="skill-tags-list">
+                    <span class="mini-tag">CPU高负载诊断</span>
+                    <span class="mini-tag">内存使用率过高诊断</span>
+                    <span class="mini-tag">响应时间过长诊断</span>
+                </div>
+                <div class="skill-action">
+                    <button class="btn btn-primary btn-block"><i class="fas fa-plus"></i> 使用此模板</button>
+                </div>
+            </div>
+
+            <div class="skill-card">
+                <span class="card-tag">系统模板</span>
+                <div class="skill-header">
+                    <div class="skill-icon-box"><i class="fas fa-bolt"></i></div>
+                    <div class="skill-title">集成问题诊断模板</div>
+                    <div class="skill-desc">用于诊断系统集成问题的通用模板</div>
+                </div>
+                <div class="skill-stats">
+                    <div class="stat-item"><span class="stat-num">4</span><span class="stat-label">适用场景</span></div>
+                    <div class="stat-item"><span class="stat-num">23</span><span class="stat-label">使用次数</span></div>
+                </div>
+                <div class="skill-tags-list">
+                    <span class="mini-tag">API调用失败诊断</span>
+                    <span class="mini-tag">消息队列集成问题</span>
+                    <span class="mini-tag">数据库同步失败</span>
+                </div>
+                <div class="skill-action">
+                    <button class="btn btn-primary btn-block"><i class="fas fa-plus"></i> 使用此模板</button>
+                </div>
+            </div>
+
+            <div class="skill-card">
+                <span class="card-tag">系统模板</span>
+                <div class="skill-header">
+                    <div class="skill-icon-

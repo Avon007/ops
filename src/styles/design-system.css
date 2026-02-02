@@ -1,0 +1,105 @@
+/*
+  Operations Assistant Design System
+  Based on test.html and ops-assistant-fairytale.html
+  Precise color values from screenshots
+*/
+
+:root {
+  /* ==================== BRAND COLORS ==================== */
+  --primary-green: #449e6b;        /* 深绿色 - 按钮、激活文字 */
+  --logo-green: #5ebf84;          /* 浅绿色 - Logo图标 */
+  --light-green-bg: #e6f6eb;      /* 浅绿背景 - 选中菜单项 */
+  --icon-box-bg: #eef7f2;         /* 图标容器背景 - 极浅绿 */
+  --stat-num-green: #4ebf86;      /* 统计数字绿色 */
+
+  /* ==================== BACKGROUND COLORS ==================== */
+  --bg-body: #f5f7fa;             /* 页面灰底 */
+  --bg-white: #ffffff;            /* 卡片白底 */
+  --bg-hover: #f0f0f0;            /* 悬停背景 */
+  --bg-card-stats: #fcfcfc;       /* 卡片统计区背景 */
+  --bg-card-tag: #f8f8f8;         /* 卡片标签背景 */
+  --bg-mini-tag: #f9f9f9;         /* 小标签背景 */
+  --bg-elevated: #fafafa;         /* 悬浮层背景 */
+  --bg-muted: #f0f0f0;            /* 弱化背景 */
+
+  /* ==================== TEXT COLORS ==================== */
+  --text-main: #333333;           /* 主标题/重要文字 */
+  --text-gray: #666666;           /* 次要文字 */
+  --text-light: #999999;          /* 辅助文字/标签 */
+  --text-muted: #888888;          /* 弱化文字/描述 */
+
+  /* ==================== BORDER COLORS ==================== */
+  --border-color: #e0e0e0;        /* 主边框 */
+  --border-light: #eee;           /* 浅色边框 */
+  --border-faint: #f0f0f0;        /* 极浅边框 */
+
+  /* ==================== BUTTON COLORS ==================== */
+  --btn-primary: #449e6b;         /* 主按钮深绿 */
+  --btn-primary-hover: #368056;   /* 主按钮悬停 */
+
+  /* ==================== STATUS COLORS ==================== */
+  --status-online: #4caf50;       /* 在线/成功 */
+  --status-success: #4caf50;      /* 成功 */
+  --status-info: #3b82f6;         /* 信息 */
+  --status-warning: #ff9800;      /* 警告 */
+  --status-error: #dc3545;        /* 错误 */
+  --status-error-bg: #fee2e2;     /* 错误背景 */
+  --accent-light: #e6f6eb;        /* 浅色强调 */
+
+  /* ==================== DIMENSIONS ==================== */
+  --sidebar-width: 260px;         /* 侧边栏宽度 */
+  --border-radius: 8px;           /* 默认圆角 */
+  --border-radius-sm: 3px;        /* 小圆角 */
+  --border-radius-md: 4px;        /* 中圆角 */
+  --border-radius-lg: 10px;       /* 大圆角 */
+
+  /* ==================== SHADOWS ==================== */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 8px 20px rgba(0, 0, 0, 0.08);
+  --shadow-terminal: 0 4px 10px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  /* ==================== SPACING ==================== */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 10px;
+  --spacing-base: 12px;
+  --spacing-lg: 15px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 25px;
+  --spacing-3xl: 30px;
+   --spacing-5xl: 430px;
+
+  /* ==================== TYPOGRAPHY ==================== */
+  --font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  --font-mono: 'Consolas', 'Monaco', monospace;
+
+  /* Font Sizes */
+  --font-size-xs: 10px;
+  --font-size-sm: 11px;
+  --font-size-base: 12px;
+  --font-size-md: 13px;
+  --font-size-lg: 14px;
+  --font-size-xl: 16px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 28px;
+  --font-size-4xl: 32px;
+  /* Additional font sizes for components */
+  --font-size-caption-1: 11px;
+  --font-size-caption-2: 10px;
+  --font-size-body: 13px;
+  --font-size-subhead: 14px;
+  --font-size-footnote: 11px;
+  --font-size-title-3: 16px;
+  --font-size-title-2: 20px;
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ==================== TRANSITIONS ==================== */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+}

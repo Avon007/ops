@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>运维助理 - Ops Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #F5F4F1;
+            color: #1A1918;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: #FFFFFF;
+            padding: 20px 30px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #E5E4E1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(26, 25, 24, 0.06);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 30px;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: #E8F5E9;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #E5E4E1;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 8px rgba(26, 25, 24, 0.06);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(26, 25, 24, 0.12);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #E5E4E1;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1918;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1A1918;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #6D6C6A;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #EDECEA;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #66BB6A);
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 12px;
+        }
+
+        .panel {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #E5E4E1;
+            box-shadow: 0 2px 8px rgba(26, 25, 24, 0.06);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            background: #FFFFFF;
+            border: 1px solid #E5E4E1;
+            color: #1A1918;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .action-icon {
+            font-size: 24px;
+        }
+
+        .action-label {
+            font-size: 12px;
+        }
+
+        .terminal {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #E5E4E1;
+        }
+
+        .terminal-line {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        .terminal-prompt {
+            color: #4CAF50;
+        }
+
+        .terminal-command {
+            color: #81C784;
+        }
+
+        .terminal-output {
+            color: #ccc;
+        }
+
+        .terminal-error {
+            color: #F44336;
+        }
+
+        .alert-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            background: #FFEBEE;
+            border-left: 3px solid #F44336;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alert-item.warning {
+            background: #FFF3E0;
+            border-left-color: #FF9800;
+        }
+
+        .alert-item.info {
+            background: #E8F5E9;
+            border-left-color: #4CAF50;
+        }
+
+        .alert-time {
+            font-size: 11px;
+            color: #6D6C6A;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: #F5F4F1;
+            border: 1px solid #E5E4E1;
+            color: #1A1918;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .terminal-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .execute-btn {
+            background: #4CAF50;
+            border: none;
+            color: #FFFFFF;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .execute-btn:hover {
+            background-color: #43A047;
+            transform: scale(1.05);
+        }
+
+        .server-list {
+            margin-top: 15px;
+        }
+
+        .server-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #FAFAF8;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.3s;
+        }
+
+        .server-item:hover {
+            background: #F5F4F1;
+        }
+
+        .server-name {
+            font-weight: 500;
+        }
+
+        .server-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .server-status.online {
+            background: #E8F5E9;
+            color: #4CAF50;
+        }
+
+        .server-status.offline {
+            background: #FFEBEE;
+            color: #F44336;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #EDECEA;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #9C9B99;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6D6C6A;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span>运维助理</span>
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-dot"></span>
+                    <span>系统正常</span>
+                </div>
+                <div class="status-item">
+                    <span id="currentTime"></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">💻 CPU 使用率</span>
+                </div>
+                <div class="metric-value" id="cpuValue">42%</div>
+                <div class="metric-label">8 核心 / 16 线程</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="cpuProgress" style="width: 42%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🧠 内存使用</span>
+                </div>
+                <div class="metric-value" id="memValue">12.4 GB</div>
+                <div class="metric-label">总计 32 GB</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="memProgress" style="width: 39%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">💾 磁盘空间</span>
+                </div>
+                <div class="metric-value" id="diskValue">256 GB</div>
+                <div class="metric-label">可用 / 总计 1 TB</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="diskProgress" style="width: 74%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🌐 网络流量</span>
+                </div>
+                <div class="metric-value" id="networkValue">125 MB/s</div>
+                <div class="metric-label">↑ 85 MB/s  ↓ 40 MB/s</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="networkProgress" style="width: 45%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <div class="card-header">
+                    <span class="card-title">🚀 快捷操作</span>
+                </div>
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="executeCommand('top')">
+                        <span class="action-icon">📊</span>
+                        <span class="action-label">系统监控</span>
+                    </button>
+                    <button class="action-btn" onclick="executeCommand('df -h')">
+                        <span class="action-icon">💾</span>
+                        <span class="action-label">磁盘检查</span>
+                    </button>
+                    <button class="action-btn" onclick="executeCommand('netstat -tunlp')">
+                        <span class="action-icon">🌐</span>
+                        <span class="action-label">端口监听</span>
+                    </button>
+                    <button class="action-btn" onclick="executeCommand('systemctl status')">
+                        <span class="action-icon">⚙️</span>
+                        <span class="action-label">服务状态</span>
+                    </button>
+                    <button class="action-btn" onclick="executeCommand('tail -f /var/log/syslog')">
+                        <span class="action-icon">📝</span>
+                        <span class="action-label">实时日志</span>
+                    </button>
+                    <button class="action-btn" onclick="executeCommand('ps aux | head -20')">
+                        <span class="action-icon">🔍</span>
+                        <span class="action-label">进程列表</span>
+                    </button>
+                    <button class="action-btn" onclick="executeCommand('journalctl -xe')">
+                        <span class="action-icon">📋</span>
+                        <span class="action-label">系统日志</span>
+                    </button>
+                    <button class="action-btn" onclick="executeCommand('uptime')">
+                        <span class="action-icon">⏱️</span>
+                        <span class="action-label">运行时间</span>
+                    </button>
+                </div>
+
+                <div class="card-header">
+                    <span class="card-title">💻 终端</span>
+                </div>
+                <div class="terminal" id="terminal">
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">ops@server:~$</span> <span class="terminal-output">欢迎使用运维助理终端</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="terminal-output">输入命令或点击上方快捷按钮执行常用操作</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" class="terminal-input" id="commandInput" placeholder="输入命令..." onkeypress="if(event.key==='Enter')executeCommand()">
+                    <button class="execute-btn" onclick="executeCommand()">执行</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="card-header">
+                    <span class="card-title">🖥️ 服务器列表</span>
+                </div>
+                <div class="server-list">
+                    <div class="server-item">
+                        <span class="server-name">web-server-01</span>
+                        <span class="server-status online">运行中</span>
+                    </div>
+                    <div class="server-item">
+                        <span class="server-name">db-server-01</span>
+                        <span class="server-status online">运行中</span>
+                    </div>
+                    <div class="server-item">
+                        <span class="server-name">cache-server-01</span>
+                        <span class="server-status online">运行中</span>
+                    </div>
+                    <div class="server-item">
+                        <span class="server-name">backup-server-01</span>
+                        <span class="server-status offline">维护中</span>
+                    </div>
+                </div>
+
+                <div class="card-header" style="margin-top: 25px;">
+                    <span class="card-title">🚨 告警信息</span>
+                </div>
+                <div class="alert-list" id="alertList">
+                    <div class="alert-item">
+                        <div>
+                            <div>CPU 使用率超过 80%</div>
+                            <div class="alert-time">5 分钟前</div>
+                        </div>
+                    </div>
+                    <div class="alert-item warning">
+                        <div>
+                            <div>磁盘空间不足 (< 20%)</div>
+                            <div class="alert-time">15 分钟前</div>
+                        </div>
+                    </div>
+                    <div class="alert-item info">
+                        <div>
+                            <div>系统更新可用</div>
+                            <div class="alert-time">1 小时前</div>
+                        </div>
+                    </div>
+                    <div class="alert-item">
+                        <div>
+                            <div>数据库连接数警告</div>
+                            <div class="alert-time">2 小时前</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // 模拟实时数据更新
+        function updateMetrics() {
+            const cpu = Math.floor(Math.random() * 60) + 20;
+            const mem = (Math.random() * 8 + 8).toFixed(1);
+            const network = Math.floor(Math.random() * 200) + 50;
+
+            document.getElementById('cpuValue').textContent = cpu + '%';
+            document.getElementById('cpuProgress').style.width = cpu + '%';
+
+            document.getElementById('memValue').textContent = mem + ' GB';
+            document.getElementById('memProgress').style.width = (mem / 32 * 100) + '%';
+
+            document.getElementById('networkValue').textContent = network + ' MB/s';
+            document.getElementById('networkProgress').style.width = (network / 300 * 100) + '%';
+        }
+        setInterval(updateMetrics, 3000);
+
+        // 终端命令执行
+        function executeCommand(cmd) {
+            if (!cmd) {
+                const input = document.getElementById('commandInput');
+                cmd = input.value.trim();
+                input.value = '';
+            }
+
+            if (!cmd) return;
+
+            const terminal = document.getElementById('terminal');
+
+            // 添加命令行
+            const cmdLine = document.createElement('div');
+            cmdLine.className = 'terminal-line';
+            cmdLine.innerHTML = `<span class="terminal-prompt">ops@server:~$</span> <span class="terminal-command">${cmd}</span>`;
+            terminal.appendChild(cmdLine);
+
+            // 模拟命令输出
+            setTimeout(() => {
+                const outputLine = document.createElement('div');
+                outputLine.className = 'terminal-line';
+
+                let output = '';
+                switch(cmd.toLowerCase()) {
+                    case 'top':
+                        output = `top - ${new Date().toLocaleString()}
+Tasks: 156 total, 3 running, 153 sleeping, 0 stopped
+%Cpu(s): 42.3 us, 15.2 sy, 0.0 ni, 38.5 id, 2.1 wa, 1.9 hi
+MiB Mem: 32145.2 total, 12456.8 free, 12384.5 used
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM
+ 1234 nginx     20   0   1.2g   256m   128m S   5.8   0.8
+ 5678 mysql     20   0   4.5g   1.2g   512m S  12.3   3.8`;
+                        break;
+                    case 'df -h':
+                        output = `Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        100G   74G   26G  74% /
+/dev/sda2        500G  234G  266G  47% /data
+/dev/sdb1        400G  123G  277G  31% /backup`;
+                        break;
+                    case 'uptime':
+                        output = ` ${new Date().toLocaleTimeString()} up 45 days,  3:22,  2 users,  load average: 0.85, 1.23, 1.45`;
+                        break;
+                    default:
+                        output = `执行命令: ${cmd}\n状态: 完成\n时间: ${new Date().toLocaleString()}`;
+                }
+
+                outputLine.innerHTML = `<span class="terminal-output">${output}</span>`;
+                terminal.appendChild(outputLine);
+                terminal.scrollTop = terminal.scrollHeight;
+            }, 300);
+
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        // 添加一些实用功能的快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                document.getElementById('terminal').innerHTML = `
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">ops@server:~$</span> <span class="terminal-output">终端已清屏</span>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

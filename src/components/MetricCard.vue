@@ -54,7 +54,7 @@ const changeClass = computed(() => {
 }
 
 .metric-label {
-  font-size: 9px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-light);
   letter-spacing: 1px;

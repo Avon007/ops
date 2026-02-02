@@ -1,0 +1,101 @@
+{
+  "project": {
+    "name": "Vue 3 + TypeScript 运维监控仪表板",
+    "testFramework": "Vitest v4.0.18",
+    "testEnvironment": "jsdom",
+    "generatedAt": "2025-02-02T18:58:39"
+  },
+  "summary": {
+    "totalTestFiles": 8,
+    "passedTestFiles": 6,
+    "failedTestFiles": 2,
+    "totalTests": 63,
+    "passedTests": 61,
+    "failedTests": 2,
+    "passRate": "96.83%",
+    "duration": "3.61s"
+  },
+  "newTests": {
+    "totalNewTests": 33,
+    "files": [
+      {
+        "path": "src/composables/useDeployment.spec.ts",
+        "type": "Composable",
+        "tests": 4,
+        "status": "passed",
+        "duration": "16ms"
+      },
+      {
+        "path": "src/composables/useRefresh.spec.ts",
+        "type": "Composable",
+        "tests": 3,
+        "status": "passed",
+        "duration": "13ms"
+      },
+      {
+        "path": "src/composables/useServerHelpers.spec.ts",
+        "type": "Composable",
+        "tests": 5,
+        "status": "passed",
+        "duration": "7ms"
+      },
+      {
+        "path": "src/stores/dashboard.spec.ts",
+        "type": "Store",
+        "tests": 7,
+        "status": "passed",
+        "duration": "1043ms"
+      },
+      {
+        "path": "src/stores/servers.spec.ts",
+        "type": "Store",
+        "tests": 8,
+        "status": "passed",
+        "duration": "1035ms"
+      },
+      {
+        "path": "src/components/MetricCard.spec.ts",
+        "type": "Component",
+        "tests": 6,
+        "status": "passed",
+        "duration": "126ms"
+      }
+    ]
+  },
+  "failedTests": [
+    {
+      "file": "src/composables/useErrorHandler.spec.ts",
+      "test": "should not show dialog for warnings",
+      "error": "AssertionError: expected true to be false",
+      "line": 180,
+      "suggestion": "检查错误对话框逻辑，确保 warning 级别不触发对话框"
+    },
+    {
+      "file": "src/stores/logs.spec.ts",
+      "test": "should filter logs by time range",
+      "error": "AssertionError: expected 0 to be greater than 0",
+      "line": 115,
+      "suggestion": "检查 filterByTimeRange 方法的实现和时间戳逻辑"
+    }
+  ],
+  "coverage": {
+    "composables": "13.6% (3/22)",
+    "stores": "22.2% (2/9)",
+    "components": "9.1% (1/11)",
+    "views": "0% (0/8)"
+  },
+  "infrastructure": {
+    "testUtils": "src/test/utils.ts",
+    "testSetup": "src/test/setup.ts",
+    "agent": ".claude/agents/vue-test-generator.md"
+  },
+  "recommendations": [
+    "修复 2 个失败的旧测试",
+    "为 useChatState 创建测试",
+    "为 alerts store 创建测试",
+    "为 ClawdBot 组件创建测试",
+    "添加端到端测试",
+    "配置 CI/CD 自动化测试",
+    "目标：达到 80%+ 代码覆盖率"
+  ]
+}

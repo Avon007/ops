@@ -1,0 +1,102 @@
+
+> ops-assistant-v2@1.0.0 test:coverage
+> vitest --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mD:/workspace/cc[39m
+      [2m[32mUI started at http://localhost:[1m51204[22m[2m/__vitest__/[39m[22m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstdout[2m | src/composables/useRefresh.spec.ts[2m:26:3[22m[2m[2m > [22m[2museRefresh[2m > [22m[2mshould refresh data successfully
+[22m[39m✅ 数据刷新成功
+
+ [32m✓[39m src/composables/useRefresh.spec.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+[90mstdout[2m | src/stores/logs.spec.ts[2m:91:5[22m[2m[2m > [22m[2museLogsStore[2m > [22m[2mactions[2m > [22m[2mshould refresh logs asynchronously
+[22m[39mRefreshing logs...
+
+[90mstdout[2m | src/stores/servers.spec.ts[2m:59:3[22m[2m[2m > [22m[2museServersStore[2m > [22m[2mshould restart server asynchronously
+[22m[39mRestarting server: app-server-01
+
+ [32m✓[39m src/composables/useDeployment.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [31m❯[39m src/composables/useErrorHandler.spec.ts [2m([22m[2m17 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 452[2mms[22m[39m
+       [32m✓[39m should create an error from string[32m 23[2mms[22m[39m
+       [32m✓[39m should create an error from Error object[32m 3[2mms[22m[39m
+       [32m✓[39m should create error with custom severity[32m 1[2mms[22m[39m
+       [32m✓[39m should create error with context[32m 3[2mms[22m[39m
+       [32m✓[39m should track error count[32m 3[2mms[22m[39m
+       [33m[2m✓[22m[39m should limit error history to MAX_ERROR_HISTORY [33m 351[2mms[22m[39m
+       [32m✓[39m should handle validation errors[32m 3[2mms[22m[39m
+       [32m✓[39m should handle network errors[32m 3[2mms[22m[39m
+       [32m✓[39m should handle API errors[32m 1[2mms[22m[39m
+       [32m✓[39m should handle auth errors[32m 1[2mms[22m[39m
+       [32m✓[39m should handle successful async operations[32m 1[2mms[22m[39m
+       [32m✓[39m should handle failed async operations[32m 4[2mms[22m[39m
+       [32m✓[39m should return fallback value on error[32m 2[2mms[22m[39m
+       [32m✓[39m should show error dialog for critical errors[32m 2[2mms[22m[39m
+       [32m✓[39m should show error dialog for errors[32m 1[2mms[22m[39m
+[31m       [31m×[31m should not show dialog for warnings[39m[32m 37[2mms[22m[39m
+       [32m✓[39m should close error dialog[32m 1[2mms[22m[39m
+[90mstdout[2m | src/stores/servers.spec.ts[2m:65:3[22m[2m[2m > [22m[2museServersStore[2m > [22m[2mshould stop server asynchronously
+[22m[39mStopping server: app-server-01
+
+ [31m❯[39m src/stores/logs.spec.ts [2m([22m[2m13 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 607[2mms[22m[39m
+       [32m✓[39m should have logs on initialization[32m 20[2mms[22m[39m
+       [32m✓[39m should have stats computed correctly[32m 8[2mms[22m[39m
+       [32m✓[39m should not have selected log initially[32m 2[2mms[22m[39m
+       [32m✓[39m should set selected log[32m 7[2mms[22m[39m
+       [32m✓[39m should get log by id[32m 3[2mms[22m[39m
+       [32m✓[39m should return undefined for non-existent log[32m 2[2mms[22m[39m
+       [32m✓[39m should add new log[32m 3[2mms[22m[39m
+       [32m✓[39m should clear all logs[32m 2[2mms[22m[39m
+       [33m[2m✓[22m[39m should refresh logs asynchronously [33m 512[2mms[22m[39m
+       [32m✓[39m should return unique services[32m 3[2mms[22m[39m
+[31m       [31m×[31m should filter logs by time range[39m[32m 16[2mms[22m[39m
+       [32m✓[39m should export logs as JSON[32m 14[2mms[22m[39m
+       [32m✓[39m should export logs as CSV[32m 5[2mms[22m[39m
+ [32m✓[39m src/composables/useServerHelpers.spec.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/stores/servers.spec.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 1117[2mms[22m[39m
+     [33m[2m✓[22m[39m should restart server asynchronously [33m 520[2mms[22m[39m
+     [33m[2m✓[22m[39m should stop server asynchronously [33m 509[2mms[22m[39m
+ [32m✓[39m src/components/MetricCard.spec.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m src/stores/dashboard.spec.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1045[2mms[22m[39m
+     [33m[2m✓[22m[39m should refresh data asynchronously [33m 1007[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/composables/useErrorHandler.spec.ts[2m:175:5[22m[2m > [22museErrorHandler[2m > [22merror dialog[2m > [22mshould not show dialog for warnings
+[31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+[36m [2m❯[22m src/composables/useErrorHandler.spec.ts:[2m180:39[22m[39m
+    [90m178| [39m      [34mhandleError[39m([32m'Warning message'[39m[33m,[39m {}[33m,[39m [32m'warning'[39m)
+    [90m179| [39m
+    [90m180| [39m      [34mexpect[39m(isErrorDialogOpen[33m.[39mvalue)[33m.[39m[34mtoBe[39m([35mfalse[39m)
+    [90m   | [39m                                      [31m^[39m
+    [90m181| [39m    })
+    [90m182| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/stores/logs.spec.ts[2m:110:5[22m[2m > [22museLogsStore[2m > [22mfiltering[2m > [22mshould filter logs by time range
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m src/stores/logs.spec.ts:[2m115:33[22m[39m
+    [90m113| [39m      [35mconst[39m recentLogs [33m=[39m store[33m.[39m[34mfilterByTimeRange[39m([32m'Last 24h'[39m)
+    [90m114| [39m
+    [90m115| [39m      [34mexpect[39m(recentLogs[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)
+    [90m   | [39m                                [31m^[39m
+    [90m116| [39m    })
+    [90m117| [39m  })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (8)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m61 passed[39m[22m[90m (63)[39m
+[2m   Start at [22m 18:58:39
+[2m   Duration [22m 9.52s[2m (transform 3.78s, setup 812ms, import 7.85s, tests 3.38s, environment 41.80s)[22m
+

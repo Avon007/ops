@@ -13,7 +13,6 @@
 import { computed } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
 import MetricCard from '@/components/MetricCard.vue'
-import ServerTable from '@/components/ServerTable.vue'
 import ActivityPanel from '@/components/ActivityPanel.vue'
 import Terminal from '@/components/Terminal.vue'
 import BannerAlert from '@/components/BannerAlert.vue'
@@ -111,9 +110,8 @@ const handleDismissBanner = () => {
           <Terminal />
         </div>
 
-        <!-- Right Panel (Server Status & Logs) -->
+        <!-- Right Panel (Activity) -->
         <div class="right-panel">
-          <server-table />
           <activity-panel />
         </div>
       </div>

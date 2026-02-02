@@ -47,6 +47,10 @@ export { useDeploymentHelpers } from './useDeploymentHelpers'
 // Logs
 export { useLogHelpers } from './useLogHelpers'
 
+// Error Handling
+export { useErrorHandler } from './useErrorHandler'
+export type { AppError, ErrorContext } from './useErrorHandler'
+
 // 类型导出
 export type { DeploymentStatus } from './useDeployment'
 export type { TerminalMessage } from './useTerminalState'

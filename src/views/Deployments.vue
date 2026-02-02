@@ -278,16 +278,16 @@ const setCurrentPage = (page: number) => {
 /* Metrics Grid */
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-md);
 }
 
 .metric-card {
   border: 1px solid var(--border-light);
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg) var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   background-color: var(--bg-white);
   border-radius: var(--border-radius);
   transition: all 0.2s ease;
@@ -305,13 +305,13 @@ const setCurrentPage = (page: number) => {
 }
 
 .metric-label {
-  font-size: var(--font-size-caption-1);
+  font-size: var(--font-size-caption-2);
   color: var(--text-gray);
   font-family: var(--font-family);
 }
 
 .metric-value {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 600;
   color: var(--text-main);
   letter-spacing: -0.5px;
@@ -536,8 +536,15 @@ const setCurrentPage = (page: number) => {
   }
 
   .metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .metric-card {
+    padding: var(--spacing-md);
+  }
+
+  .metric-value {
+    font-size: 24px;
   }
 }
 
@@ -566,16 +573,16 @@ const setCurrentPage = (page: number) => {
   }
 
   .metrics-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
   }
 
   .metric-card {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
   }
 
   .metric-value {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .table-header {

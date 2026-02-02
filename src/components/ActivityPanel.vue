@@ -39,7 +39,7 @@ const getIndicatorClass = (type: Activity['type']) => {
     </div>
 
     <div class="activities-list">
-      <div v-for="activity in activities" :key="activity.id" class="activity-item">
+      <div v-for="activity in activities" :key="activity.id" v-memo="[activity.id, activity.type]" class="activity-item">
         <div class="activity-indicator" :class="getIndicatorClass(activity.type)"></div>
         <div class="activity-content">
           <div class="activity-title">{{ activity.title }}</div>

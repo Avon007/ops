@@ -131,7 +131,7 @@ const setCurrentPage = (page: number) => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="deployment in deployments" :key="deployment.id">
+            <tr v-for="deployment in deployments" :key="deployment.id" v-memo="[deployment.id, deployment.status]">
               <td class="deployment-name">{{ deployment.name }}</td>
               <td>{{ deployment.environment }}</td>
               <td>

@@ -112,6 +112,7 @@ onMounted(async () => {
       <div
         v-for="msg in clawdBotStore.messages"
         :key="msg.id"
+        v-memo="[msg.id, msg.role, msg.content]"
         class="message"
         :class="msg.role"
       >

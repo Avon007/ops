@@ -183,6 +183,7 @@ const viewAlertDetails = (alert: typeof alertsStore.alerts.value[0]) => {
       <div
         v-for="alert in filteredAlerts"
         :key="alert.id"
+        v-memo="[alert.id, alert.status, alert.level, alert.acknowledged]"
         :class="['alert-item', getLevelClass(alert.level)]"
       >
         <!-- Alert Header -->

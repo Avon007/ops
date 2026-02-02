@@ -144,6 +144,7 @@ const toggleTrace = (traceId: string) => {
       <div
         v-for="trace in filteredTraces"
         :key="trace.traceId"
+        v-memo="[trace.traceId, trace.status, trace.duration]"
         class="trace-card"
         :class="getTraceCardClass(trace.status)"
       >

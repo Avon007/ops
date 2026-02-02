@@ -191,6 +191,7 @@ const closeModal = () => {
       <div
         v-for="server in filteredServers"
         :key="server.id"
+        v-memo="[server.id, server.status, server.cpu, server.memory, server.disk]"
         :class="['server-card', getStatusClass(server.status)]"
       >
         <!-- Server Header -->

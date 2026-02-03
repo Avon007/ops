@@ -20,7 +20,7 @@ npm run build
 npm run preview
 ```
 
-使用 vue skill, 优化整个代码架构和代码。
+使用 vue skill, 优化整个代码架构和代码，任何代码实现都要严格遵守vue skill里的代码规范。
 
 ### 测试
 ```bash

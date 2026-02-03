@@ -9,15 +9,17 @@
  * 3. 移除 v-html，修复 XSS 安全问题
  * 4. 代码行数从 1317 行减少到 ~150 行
  * 5. 提高可维护性和可测试性
+ * 6. 支持调整大小
  */
 
-import { onMounted, watch, nextTick } from 'vue'
+import { computed, onMounted, ref, watch, nextTick } from 'vue'
 
 // Composables
 import {
   useCommandHistory,
   useTerminalState,
-  useTerminalCommand
+  useTerminalCommand,
+  useResizable
 } from '@/composables'
 
 // 子组件
@@ -27,17 +29,68 @@ import { TerminalHeader, TerminalOutput, TerminalInput } from './terminal'
 interface Props {
   title?: string
   showHeader?: boolean
+  resizable?: boolean
+  initialHeight?: number
+  minHeight?: number
+  maxHeight?: number
+  onResizeStart?: () => void
+  onResizeEnd?: () => void
 }
 
 withDefaults(defineProps<Props>(), {
   title: '运维终端',
-  showHeader: true
+  showHeader: true,
+  resizable: false,
+  initialHeight: 400,
+  minHeight: 200,
+  maxHeight: 800
 })
+
+// Emits
+const emit = defineEmits<{
+  (e: 'resize', size: { width: number; height: number }): void
+}>()
+
+// State
+const terminalHeight = ref(400)
+const terminalContainerRef = ref<HTMLElement | null>(null)
 
 // Composables
 const commandHistory = useCommandHistory()
 const terminalState = useTerminalState()
 const terminalCommand = useTerminalCommand()
+
+const { isResizing, elementRef, startResize } = useResizable({
+  minHeight: 200,
+  maxHeight: 800,
+  onResizeStart: () => {
+    // Callback handled in template
+  },
+  onResize: (size) => {
+    terminalHeight.value = size.height
+    emit('resize', size)
+  },
+  onResizeEnd: () => {
+    // Callback handled in template
+  }
+})
+
+// 同步 elementRef
+watch(terminalContainerRef, (newRef) => {
+  if (newRef) {
+    elementRef.value = newRef
+  }
+})
+
+// Computed
+const containerStyle = computed(() => ({
+  height: `${terminalHeight.value}px`
+}))
+
+const containerClass = computed(() => ({
+  'is-resizable': false,
+  'is-resizing': isResizing.value
+}))
 
 // 解构
 const {
@@ -121,6 +174,10 @@ const handleFocusInput = () => {
   focusInput()
 }
 
+const handleResizeStart = (event: MouseEvent) => {
+  startResize('s', event)
+}
+
 // Lifecycle
 onMounted(() => {
   // Welcome message
@@ -155,7 +212,21 @@ watch(
 </script>
 
 <template>
-  <div class="terminal-container" @click="handleFocusInput">
+  <div
+    ref="terminalContainerRef"
+    class="terminal-container"
+    :class="containerClass"
+    :style="containerStyle"
+    @click="handleFocusInput"
+  >
+    <!-- 调整大小手柄 -->
+    <div
+      v-if="resizable"
+      class="resize-handle resize-handle-bottom"
+      title="拖拽调整高度"
+      @mousedown="handleResizeStart"
+    ></div>
+
     <!-- Header -->
     <TerminalHeader
       :title="title"
@@ -186,10 +257,43 @@ watch(
 .terminal-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
   background-color: #1e1e1e;
   border-radius: var(--border-radius-lg);
   overflow: hidden;
+  position: relative;
+  transition: box-shadow 0.2s ease;
+}
+
+.terminal-container.is-resizable {
+  cursor: default;
+}
+
+.terminal-container.is-resizing {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.resize-handle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: row-resize;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  z-index: 10;
+}
+
+.resize-handle-bottom {
+  bottom: 0;
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+}
+
+.terminal-container.is-resizable:hover .resize-handle-bottom {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.resize-handle-bottom:hover {
+  background-color: var(--primary-green) !important;
 }
 
 /* Responsive */

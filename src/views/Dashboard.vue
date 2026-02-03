@@ -8,9 +8,11 @@
  * 2. 使用 composables 提取逻辑
  * 3. 拆分为更小的子组件
  * 4. 遵循 Vue 3 Composition API 最佳实践
+ * 5. 支持拖拽和调整大小交互功能
+ * 6. 使用 composables 封装布局逻辑
  */
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
 import MetricCard from '@/components/MetricCard.vue'
 import ActivityPanel from '@/components/ActivityPanel.vue'
@@ -19,8 +21,7 @@ import BannerAlert from '@/components/BannerAlert.vue'
 import DeployModal from '@/components/DeployModal.vue'
 
 // Composables
-import { useRefresh } from '@/composables/useRefresh'
-import { useDeployment } from '@/composables/useDeployment'
+import { useRefresh, useDeployment, useLayoutConfig } from '@/composables'
 
 // Stores
 import { useDashboardStore } from '@/stores/dashboard'
@@ -47,9 +48,16 @@ const {
   }
 })
 
+const { layoutClasses, metricsGridStyle, cardSize } = useLayoutConfig()
+
 // Computed
 const metrics = computed(() => dashboardStore.metrics)
 const bannerVisible = computed(() => dashboardStore.bannerVisible)
+
+// Interactive Features State
+const enableDraggable = ref(true)
+const enableResizable = ref(true)
+const draggedMetric = ref<string | null>(null)
 
 // Methods
 const handleRefreshData = async () => {
@@ -72,10 +80,46 @@ const handleExecuteDeploy = async () => {
 const handleDismissBanner = () => {
   dashboardStore.hideBanner()
 }
+
+// Drag and Drop Handlers
+const handleMetricDragStart = (metricLabel: string) => {
+  draggedMetric.value = metricLabel
+  console.log(`开始拖拽: ${metricLabel}`)
+}
+
+const handleMetricDragEnd = () => {
+  console.log(`结束拖拽: ${draggedMetric.value}`)
+  draggedMetric.value = null
+}
+
+// Resize Handlers
+const handleActivityResize = (size: { width: number; height: number }) => {
+  console.log(`活动面板调整大小: ${size.width}px`)
+}
+
+const handleActivityResizeStart = () => {
+  console.log('开始调整活动面板大小')
+}
+
+const handleActivityResizeEnd = () => {
+  console.log('结束调整活动面板大小')
+}
+
+const handleTerminalResize = (size: { width: number; height: number }) => {
+  console.log(`终端调整大小: ${size.height}px`)
+}
+
+const handleTerminalResizeStart = () => {
+  console.log('开始调整终端大小')
+}
+
+const handleTerminalResizeEnd = () => {
+  console.log('结束调整终端大小')
+}
 </script>
 
 <template>
-  <div class="dashboard-container">
+  <div class="dashboard-container" :class="layoutClasses">
     <!-- Main Content -->
     <main class="main-content">
       <!-- Page Header -->
@@ -95,11 +139,15 @@ const handleDismissBanner = () => {
       />
 
       <!-- Metric Cards -->
-      <div class="metrics-row">
+      <div class="metrics-row" :style="metricsGridStyle">
         <metric-card
           v-for="metric in metrics"
           :key="metric.label"
           v-bind="metric"
+          :size="cardSize"
+          :draggable="enableDraggable"
+          @drag-start="() => handleMetricDragStart(metric.label)"
+          @drag-end="handleMetricDragEnd"
         />
       </div>
 
@@ -107,12 +155,22 @@ const handleDismissBanner = () => {
       <div class="main-area">
         <!-- Terminal (Center) -->
         <div class="terminal-section">
-          <Terminal />
+          <Terminal
+            :resizable="enableResizable"
+            @resize="handleTerminalResize"
+            @resize-start="handleTerminalResizeStart"
+            @resize-end="handleTerminalResizeEnd"
+          />
         </div>
 
         <!-- Right Panel (Activity) -->
         <div class="right-panel">
-          <activity-panel />
+          <activity-panel
+            :resizable="enableResizable"
+            @resize="handleActivityResize"
+            @resize-start="handleActivityResizeStart"
+            @resize-end="handleActivityResizeEnd"
+          />
         </div>
       </div>
     </main>
@@ -136,6 +194,7 @@ const handleDismissBanner = () => {
   min-height: 100vh;
   background-color: var(--bg-body);
   position: relative;
+  transition: all 0.3s ease;
 }
 
 .main-content {
@@ -144,11 +203,37 @@ const handleDismissBanner = () => {
   flex-direction: column;
   gap: var(--spacing-2xl);
   position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Layout Modes */
+.dashboard-container.layout-compact .main-content {
+  gap: var(--spacing-base);
+  padding: var(--spacing-lg) var(--spacing-lg);
+}
+
+.dashboard-container.layout-spacious .main-content {
+  gap: var(--spacing-3xl);
+  padding: var(--spacing-3xl) var(--spacing-3xl);
+}
+
+/* Gap Sizes */
+.dashboard-container.gap-small .metrics-row {
+  gap: var(--spacing-sm);
+}
+
+.dashboard-container.gap-medium .metrics-row {
+  gap: var(--spacing-base);
+}
+
+.dashboard-container.gap-large .metrics-row {
+  gap: var(--spacing-lg);
 }
 
 .metrics-row {
-  display: flex;
+  display: grid;
   gap: var(--spacing-base);
+  transition: all 0.3s ease;
 }
 
 .main-area {

@@ -1,4 +1,16 @@
 <script setup lang="ts">
+/**
+ * AppSidebar Component
+ * 应用侧边栏组件
+ *
+ * 显示主导航菜单，支持折叠状态
+ *
+ * 职责：
+ * - 渲染侧边栏导航UI
+ * - 响应折叠状态变化
+ * - 提供导航功能
+ */
+
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
@@ -10,8 +22,11 @@ import {
   Package,
   Brain,
   Settings,
-  Terminal
+  Terminal,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-vue-next'
+import { useSidebar } from '@/composables'
 
 // Props
 interface Props {
@@ -21,9 +36,14 @@ interface Props {
 
 defineProps<Props>()
 
+// Router
 const router = useRouter()
 const route = useRoute()
 
+// Composables - 侧边栏管理
+const { isCollapsed, sidebarWidth, toggle: toggleSidebar } = useSidebar()
+
+// State
 const currentPath = computed(() => route.path)
 const systemStatus = ref('在线')
 const currentTime = ref('')
@@ -65,15 +85,15 @@ const navigateTo = async (path: string) => {
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" :class="{ collapsed: isCollapsed }" :style="{ width: sidebarWidth }">
     <!-- Logo Section -->
     <div class="logo-section">
       <div class="logo-mark">OPS</div>
-      <div class="logo-text">运维小助理</div>
+      <div v-if="!isCollapsed" class="logo-text">运维小助理</div>
     </div>
 
     <!-- System Status -->
-    <div class="system-status">
+    <div v-if="!isCollapsed" class="system-status">
       <div class="status-label">系统状态</div>
       <div class="status-row">
         <div class="status-dot dot-positive"></div>
@@ -89,17 +109,24 @@ const navigateTo = async (path: string) => {
         :key="item.id"
         class="nav-item"
         :class="{ active: currentPath === item.path }"
+        :title="isCollapsed ? item.label : ''"
         @click="navigateTo(item.path)"
       >
-        <div class="nav-number">{{ item.id }}</div>
+        <div v-if="!isCollapsed" class="nav-number">{{ item.id }}</div>
         <component :is="item.icon" class="nav-icon" :size="16" />
-        <div class="nav-label-text">{{ item.label }}</div>
+        <div v-if="!isCollapsed" class="nav-label-text">{{ item.label }}</div>
       </div>
     </div>
 
     <!-- Bottom Actions -->
     <div class="sidebar-actions">
-      <button class="action-button" @click="onOpenSettings" title="设置">
+      <!-- Toggle Collapse Button -->
+      <button class="action-button toggle-button" @click="toggleSidebar" :title="isCollapsed ? '展开' : '折叠'">
+        <component :is="isCollapsed ? ChevronRight : ChevronLeft" :size="18" />
+        <span v-if="!isCollapsed">折叠</span>
+      </button>
+
+      <button v-if="!isCollapsed" class="action-button" @click="onOpenSettings" title="设置">
         <Settings :size="18" />
         <span>设置</span>
       </button>
@@ -117,6 +144,20 @@ const navigateTo = async (path: string) => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2xl);
+  transition: width 0.3s ease, padding 0.3s ease;
+}
+
+.sidebar.collapsed {
+  padding: var(--spacing-2xl) var(--spacing-sm);
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 10px 8px;
+}
+
+.sidebar.collapsed .nav-icon {
+  margin: 0;
 }
 
 .logo-section {
@@ -293,5 +334,13 @@ const navigateTo = async (path: string) => {
 
 .action-button:active {
   transform: scale(0.98);
+}
+
+.toggle-button {
+  justify-content: center;
+}
+
+.sidebar.collapsed .toggle-button {
+  padding: var(--spacing-sm);
 }
 </style>

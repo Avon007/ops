@@ -1,14 +1,81 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+/**
+ * ActivityPanel Component
+ * 活动面板组件
+ *
+ * 显示系统活动日志，支持调整宽度
+ */
+
+import { computed, onMounted, ref, watch } from 'vue'
 import type { Activity } from '@/types'
 import { mockActivities } from '@/mock/data'
+import { useResizable } from '@/composables'
 
+// Props
+interface Props {
+  resizable?: boolean
+  initialWidth?: number
+  minWidth?: number
+  maxWidth?: number
+  onResizeStart?: () => void
+  onResizeEnd?: () => void
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  resizable: false,
+  initialWidth: 320,
+  minWidth: 280,
+  maxWidth: 600
+})
+
+// Emits
+const emit = defineEmits<{
+  (e: 'resize', size: { width: number; height: number }): void
+}>()
+
+// State
 const activities = ref<Activity[]>([])
+const panelWidth = ref(props.initialWidth)
+const panelRef = ref<HTMLElement | null>(null)
+
+// Composables
+const { isResizing, elementRef, startResize } = useResizable({
+  minWidth: props.minWidth,
+  maxWidth: props.maxWidth,
+  onResizeStart: () => {
+    props.onResizeStart?.()
+  },
+  onResize: (size) => {
+    panelWidth.value = size.width
+    emit('resize', size)
+  },
+  onResizeEnd: () => {
+    props.onResizeEnd?.()
+  }
+})
+
+// 同步 elementRef
+watch(panelRef, (newRef) => {
+  if (newRef) {
+    elementRef.value = newRef
+  }
+})
 
 onMounted(() => {
   activities.value = mockActivities
 })
 
+// Computed
+const panelStyle = computed(() => ({
+  width: `${panelWidth.value}px`
+}))
+
+const panelClass = computed(() => ({
+  'is-resizable': props.resizable,
+  'is-resizing': isResizing.value
+}))
+
+// Helpers
 const getStatusClass = (type: Activity['type']) => {
   const classes = {
     success: 'text-positive',
@@ -26,10 +93,28 @@ const getIndicatorClass = (type: Activity['type']) => {
   }
   return classes[type]
 }
+
+const handleResizeStart = (event: MouseEvent) => {
+  if (!props.resizable) return
+  startResize('e', event)
+}
 </script>
 
 <template>
-  <div class="activity-panel">
+  <div
+    ref="panelRef"
+    class="activity-panel"
+    :class="panelClass"
+    :style="panelStyle"
+  >
+    <!-- 调整大小手柄 -->
+    <div
+      v-if="resizable"
+      class="resize-handle resize-handle-right"
+      title="拖拽调整宽度"
+      @mousedown="handleResizeStart"
+    ></div>
+
     <div class="section-header">
       <div class="section-title-group">
         <div class="section-category">系统事件</div>
@@ -55,7 +140,6 @@ const getIndicatorClass = (type: Activity['type']) => {
 
 <style scoped>
 .activity-panel {
-  width: 320px;
   background-color: var(--bg-white);
   border: 1px solid var(--border-light);
   border-radius: var(--border-radius-lg);
@@ -64,6 +148,45 @@ const getIndicatorClass = (type: Activity['type']) => {
   flex-direction: column;
   gap: var(--spacing-base);
   box-shadow: var(--shadow-card);
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.activity-panel.is-resizable {
+  cursor: default;
+}
+
+.activity-panel.is-resizing {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-green);
+}
+
+.activity-panel.is-resizable:hover {
+  border-color: var(--border-hover);
+}
+
+.resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  z-index: 10;
+}
+
+.resize-handle-right {
+  right: 0;
+  border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
+}
+
+.activity-panel.is-resizable:hover .resize-handle-right {
+  background-color: var(--border-light);
+}
+
+.resize-handle-right:hover {
+  background-color: var(--primary-green) !important;
 }
 
 .section-header {

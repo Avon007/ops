@@ -6,6 +6,10 @@
 // Dashboard & UI
 export { useDeployment } from './useDeployment'
 export { useRefresh } from './useRefresh'
+export { useDraggable } from './useDraggable'
+export { useResizable } from './useResizable'
+export { useLayoutConfig } from './useLayoutConfig'
+export { useSidebar } from './useSidebar'
 
 // Terminal
 export { useCommandHistory } from './useCommandHistory'

@@ -70,7 +70,7 @@ watch(() => route.path, (newPath, oldPath) => {
     <!-- Main Content -->
     <main class="main-content" :class="mainContentClasses">
       <!-- Inline Navigation - 仅在无边栏模式下显示 -->
-      <InlineNavigation v-if="!showSidebar" />
+      <InlineNavigation v-if="!showSidebar" @open-settings="handleOpenSettings" />
 
       <!-- Router Content -->
       <RouterView :key="$route.fullPath" v-slot="{ Component }">

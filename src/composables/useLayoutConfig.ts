@@ -3,20 +3,27 @@
  * 布局配置管理 composable
  *
  * 职责：
- * - 封装布局模式相关逻辑
+ * - 封装侧边栏位置相关逻辑
  * - 提供布局样式计算
  * - 响应设置变化
- * - 管理侧边栏位置和显示
+ * - 管理侧边栏显示状态
+ *
+ * 架构原则：
+ * - 使用 computed 缓存派生状态
+ * - 单一数据源（settings store）
+ * - 清晰的返回结构
+ * - 使用常量避免魔法值
  */
 
 import { computed } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
+import { getSidebarPosition, shouldShowSidebar } from '@/constants'
 
 export function useLayoutConfig() {
   // Store
   const settingsStore = useSettingsStore()
 
-  // State (从 store 读取)
+  // State - 从 store 读取（单一数据源）
   const layoutMode = computed(() => settingsStore.layoutMode)
   const cardSize = computed(() => settingsStore.cardSize)
   const cardsPerRow = computed(() => settingsStore.preferences.layout.cardsPerRow)
@@ -24,7 +31,6 @@ export function useLayoutConfig() {
 
   // Computed - 布局类名
   const layoutClasses = computed(() => ({
-    [`layout-${layoutMode.value}`]: true,
     [`gap-${gapSize.value}`]: true
   }))
 
@@ -33,15 +39,11 @@ export function useLayoutConfig() {
     gridTemplateColumns: `repeat(${cardsPerRow.value}, 1fr)`
   }))
 
-  // Computed - 侧边栏位置
-  const sidebarPosition = computed(() => {
-    if (layoutMode.value === 'sidebar-right') return 'right'
-    if (layoutMode.value === 'no-sidebar') return 'none'
-    return 'left' // default, compact, spacious, sidebar-left
-  })
+  // Computed - 侧边栏位置（使用常量函数）
+  const sidebarPosition = computed(() => getSidebarPosition(layoutMode.value))
 
-  // Computed - 是否显示侧边栏
-  const showSidebar = computed(() => layoutMode.value !== 'no-sidebar')
+  // Computed - 是否显示侧边栏（使用常量函数）
+  const showSidebar = computed(() => shouldShowSidebar(layoutMode.value))
 
   // Computed - 侧边栏样式类
   const sidebarClasses = computed(() => ({
@@ -57,23 +59,10 @@ export function useLayoutConfig() {
     'sidebar-right': sidebarPosition.value === 'right'
   }))
 
-  // Computed - 是否紧凑模式
-  const isCompact = computed(() => layoutMode.value === 'compact')
-
-  // Computed - 是否宽松模式
-  const isSpacious = computed(() => layoutMode.value === 'spacious')
-
-  // Computed - 是否默认模式
-  const isDefault = computed(() => layoutMode.value === 'default')
-
-  // Computed - 是否侧边栏在左
-  const isSidebarLeft = computed(() => sidebarPosition.value === 'left')
-
-  // Computed - 是否侧边栏在右
-  const isSidebarRight = computed(() => sidebarPosition.value === 'right')
-
-  // Computed - 是否无侧边栏
-  const isNoSidebar = computed(() => sidebarPosition.value === 'none')
+  // Computed - 布局模式判断（语义化命名）
+  const isSidebarLeft = computed(() => layoutMode.value === 'sidebar-left')
+  const isSidebarRight = computed(() => layoutMode.value === 'sidebar-right')
+  const isNoSidebar = computed(() => layoutMode.value === 'no-sidebar')
 
   return {
     // State
@@ -90,9 +79,6 @@ export function useLayoutConfig() {
     sidebarClasses,
     mainContentClasses,
     // Computed - 模式判断
-    isCompact,
-    isSpacious,
-    isDefault,
     isSidebarLeft,
     isSidebarRight,
     isNoSidebar

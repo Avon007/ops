@@ -2,23 +2,29 @@
  * Settings Store
  * 用户设置状态管理
  * 替代非响应式的 preferencesService
+ *
+ * 架构原则：
+ * - 使用常量避免魔法值
+ * - Setup Store 模式
+ * - 类型安全
  */
 
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import type { UserPreferences, LayoutMode, CardSize } from '@/types'
+import { DEFAULT_LAYOUT_MODE, DEFAULT_CARD_SIZE } from '@/constants'
 
 const STORAGE_KEY = 'ops-assistant-preferences'
 
 // 默认配置
 const defaultPreferences: UserPreferences = {
   layout: {
-    mode: 'default' as LayoutMode,
+    mode: DEFAULT_LAYOUT_MODE,
     sidebarWidth: 260,
     sidebarCollapsed: false,
     showHeader: true,
     showFooter: false,
-    cardSize: 'medium' as CardSize,
+    cardSize: DEFAULT_CARD_SIZE,
     cardsPerRow: 3,
     gapSize: 'medium'
   },

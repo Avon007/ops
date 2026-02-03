@@ -909,7 +909,7 @@ export interface SkillExecutionHistory {
 // ==================== UI Configuration Types - 页面布局个性化配置 ====================
 
 // 布局模式
-export type LayoutMode = 'default' | 'compact' | 'spacious' | 'sidebar-left' | 'sidebar-right' | 'no-sidebar'
+export type LayoutMode = 'sidebar-left' | 'sidebar-right' | 'no-sidebar'
 
 // 卡片大小
 export type CardSize = 'small' | 'medium' | 'large' | 'auto'

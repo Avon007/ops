@@ -206,17 +206,6 @@ const handleTerminalResizeEnd = () => {
   transition: all 0.3s ease;
 }
 
-/* Layout Modes */
-.dashboard-container.layout-compact .main-content {
-  gap: var(--spacing-base);
-  padding: var(--spacing-lg) var(--spacing-lg);
-}
-
-.dashboard-container.layout-spacious .main-content {
-  gap: var(--spacing-3xl);
-  padding: var(--spacing-3xl) var(--spacing-3xl);
-}
-
 /* Gap Sizes */
 .dashboard-container.gap-small .metrics-row {
   gap: var(--spacing-sm);

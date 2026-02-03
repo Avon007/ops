@@ -6,6 +6,7 @@
  * 职责：
  * - 在无边栏模式下显示导航
  * - 水平布局的导航菜单
+ * - 提供设置按钮
  * - 支持响应式设计
  */
 
@@ -19,8 +20,16 @@ import {
   FileText,
   Package,
   Brain,
-  Terminal
+  Terminal,
+  Settings
 } from 'lucide-vue-next'
+
+// Props
+interface Props {
+  onOpenSettings?: () => void
+}
+
+defineProps<Props>()
 
 // Router
 const router = useRouter()
@@ -56,6 +65,7 @@ const navigateTo = async (path: string) => {
 <template>
   <nav class="inline-nav">
     <div class="nav-container">
+      <!-- Navigation Items -->
       <div
         v-for="item in navItems"
         :key="item.id"
@@ -66,6 +76,15 @@ const navigateTo = async (path: string) => {
         <component :is="item.icon" :size="18" />
         <span class="nav-label">{{ item.label }}</span>
       </div>
+
+      <!-- Spacer -->
+      <div class="nav-spacer"></div>
+
+      <!-- Settings Button -->
+      <button class="nav-item settings-button" @click="onOpenSettings" title="设置">
+        <Settings :size="18" />
+        <span class="nav-label">设置</span>
+      </button>
     </div>
   </nav>
 </template>
@@ -89,6 +108,10 @@ const navigateTo = async (path: string) => {
 
 .nav-container::-webkit-scrollbar {
   display: none;
+}
+
+.nav-spacer {
+  flex: 1;
 }
 
 .nav-item {
@@ -121,6 +144,18 @@ const navigateTo = async (path: string) => {
 
 .nav-item svg {
   flex-shrink: 0;
+}
+
+.nav-item.settings-button {
+  background-color: var(--bg-elevated);
+  color: var(--text-gray);
+  border: 1px solid var(--border-color);
+}
+
+.nav-item.settings-button:hover {
+  background-color: var(--accent-light);
+  color: var(--primary-green);
+  border-color: var(--primary-green);
 }
 
 .nav-label {

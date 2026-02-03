@@ -9,7 +9,7 @@ import {
   Check
 } from 'lucide-vue-next'
 import { useSettingsStore } from '@/stores/settings'
-import { useSettingsDialog, useSettingsOptions, useDisplaySettings } from '@/composables'
+import { useSettingsDialog, useSettingsOptions, useDashboardSettings } from '@/composables'
 import type { LayoutMode, CardSize } from '@/types'
 
 // Props
@@ -26,7 +26,18 @@ const emit = defineEmits<{
 const settingsStore = useSettingsStore()
 const { activeTab, saveStatus, showSaved, setActiveTab } = useSettingsDialog()
 const { layoutOptions, cardSizeOptions, fontSizeOptions, tabs } = useSettingsOptions()
-const { setAnimations, setTransitions, setReduceMotion } = useDisplaySettings()
+const {
+  bannerAlertVisible,
+  metricCardsVisible,
+  activityPanelVisible,
+  terminalVisible,
+  pageHeaderVisible,
+  draggableEnabled,
+  resizableEnabled,
+  toggleComponent,
+  toggleDraggable,
+  toggleResizable
+} = useDashboardSettings()
 
 // Local state
 const importInput = ref<HTMLInputElement>()
@@ -52,18 +63,38 @@ const handleCardsPerRowChange = (count: number) => {
   showSaved()
 }
 
-const handleAnimationsToggle = () => {
-  setAnimations(!settingsStore.preferences.display.animationsEnabled)
+const handleBannerAlertToggle = () => {
+  toggleComponent('bannerAlert')
   showSaved()
 }
 
-const handleTransitionsToggle = () => {
-  setTransitions(!settingsStore.preferences.display.transitionsEnabled)
+const handleMetricCardsToggle = () => {
+  toggleComponent('metricCards')
   showSaved()
 }
 
-const handleReduceMotionToggle = () => {
-  setReduceMotion(!settingsStore.preferences.display.reduceMotion)
+const handleActivityPanelToggle = () => {
+  toggleComponent('activityPanel')
+  showSaved()
+}
+
+const handleTerminalToggle = () => {
+  toggleComponent('terminal')
+  showSaved()
+}
+
+const handlePageHeaderToggle = () => {
+  toggleComponent('pageHeader')
+  showSaved()
+}
+
+const handleDraggableToggle = () => {
+  toggleDraggable()
+  showSaved()
+}
+
+const handleResizableToggle = () => {
+  toggleResizable()
   showSaved()
 }
 
@@ -234,36 +265,72 @@ onMounted(() => {
 
           <!-- Display Tab -->
           <div v-if="activeTab === 'display'" class="tab-content">
-            <h3>动画与过渡效果</h3>
+            <h3>仪表盘组件</h3>
             <div class="settings-list">
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="settingsStore.preferences.display.animationsEnabled"
-                  @change="handleAnimationsToggle"
+                  :checked="bannerAlertVisible"
+                  @change="handleBannerAlertToggle"
                 />
-                <span>启用动画</span>
+                <span>横幅告警</span>
               </label>
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="settingsStore.preferences.display.transitionsEnabled"
-                  @change="handleTransitionsToggle"
+                  :checked="metricCardsVisible"
+                  @change="handleMetricCardsToggle"
                 />
-                <span>启用过渡效果</span>
+                <span>指标卡片</span>
               </label>
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="settingsStore.preferences.display.reduceMotion"
-                  @change="handleReduceMotionToggle"
+                  :checked="activityPanelVisible"
+                  @change="handleActivityPanelToggle"
                 />
-                <span>减少动效</span>
+                <span>活动面板</span>
+              </label>
+              <label class="setting-item">
+                <input
+                  type="checkbox"
+                  :checked="terminalVisible"
+                  @change="handleTerminalToggle"
+                />
+                <span>终端</span>
+              </label>
+              <label class="setting-item">
+                <input
+                  type="checkbox"
+                  :checked="pageHeaderVisible"
+                  @change="handlePageHeaderToggle"
+                />
+                <span>页面头部</span>
+              </label>
+            </div>
+
+            <h3>交互功能</h3>
+            <div class="settings-list">
+              <label class="setting-item">
+                <input
+                  type="checkbox"
+                  :checked="draggableEnabled"
+                  @change="handleDraggableToggle"
+                />
+                <span>启用拖拽</span>
+              </label>
+              <label class="setting-item">
+                <input
+                  type="checkbox"
+                  :checked="resizableEnabled"
+                  @change="handleResizableToggle"
+                />
+                <span>启用调整大小</span>
               </label>
             </div>
 
             <div class="info-box">
-              <p>当启用"减少动效"时，将禁用所有动画和过渡效果，提供更简洁的用户体验。此设置有助于提高性能和可访问性。</p>
+              <p>配置仪表盘上显示的组件。禁用某个组件后，它将不再显示在仪表盘上。交互功能允许您拖拽组件或调整组件大小。</p>
             </div>
           </div>
 

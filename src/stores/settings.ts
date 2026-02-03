@@ -12,7 +12,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import type { UserPreferences, LayoutMode, CardSize } from '@/types'
-import { DEFAULT_LAYOUT_MODE, DEFAULT_CARD_SIZE, DEFAULT_DISPLAY_SETTINGS } from '@/constants'
+import { DEFAULT_LAYOUT_MODE, DEFAULT_CARD_SIZE, DEFAULT_DASHBOARD_CONFIG } from '@/constants'
 
 const STORAGE_KEY = 'ops-assistant-preferences'
 
@@ -28,7 +28,7 @@ const defaultPreferences: UserPreferences = {
     cardsPerRow: 3,
     gapSize: 'medium'
   },
-  display: DEFAULT_DISPLAY_SETTINGS,
+  dashboard: DEFAULT_DASHBOARD_CONFIG,
   font: {
     size: 'medium',
     family: "'Inter', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif",
@@ -58,7 +58,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const layoutMode = computed(() => preferences.value.layout.mode)
   const cardSize = computed(() => preferences.value.layout.cardSize)
   const fontSize = computed(() => preferences.value.font.size)
-  const animationsEnabled = computed(() => preferences.value.display.animationsEnabled)
+  const dashboardConfig = computed(() => preferences.value.dashboard)
 
   // Actions
   const loadPreferences = () => {
@@ -102,13 +102,6 @@ export const useSettingsStore = defineStore('settings', () => {
     savePreferences()
   }
 
-  const setAnimations = (enabled: boolean) => {
-    preferences.value.display.animationsEnabled = enabled
-    preferences.value.display.transitionsEnabled = enabled
-    savePreferences()
-    applyFontSettings()
-  }
-
   const setFontSize = (size: 'small' | 'medium' | 'large' | 'extra-large') => {
     preferences.value.font.size = size
     savePreferences()
@@ -120,7 +113,7 @@ export const useSettingsStore = defineStore('settings', () => {
       ...preferences.value,
       ...updates,
       layout: { ...preferences.value.layout, ...updates.layout },
-      display: { ...preferences.value.display, ...updates.display },
+      dashboard: { ...preferences.value.dashboard, ...updates.dashboard },
       font: { ...preferences.value.font, ...updates.font },
       notifications: { ...preferences.value.notifications, ...updates.notifications },
       dataRefresh: { ...preferences.value.dataRefresh, ...updates.dataRefresh }
@@ -180,7 +173,7 @@ export const useSettingsStore = defineStore('settings', () => {
   ): UserPreferences {
     return {
       layout: { ...defaults.layout, ...stored.layout },
-      display: { ...defaults.display, ...stored.display },
+      dashboard: { ...defaults.dashboard, ...stored.dashboard },
       font: { ...defaults.font, ...stored.font },
       language: stored.language || defaults.language,
       timezone: stored.timezone || defaults.timezone,
@@ -210,7 +203,7 @@ export const useSettingsStore = defineStore('settings', () => {
     layoutMode,
     cardSize,
     fontSize,
-    animationsEnabled,
+    dashboardConfig,
     // Actions
     loadPreferences,
     savePreferences,
@@ -218,7 +211,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setCardSize,
     setCardsPerRow,
     toggleSidebar,
-    setAnimations,
     setFontSize,
     updatePreferences,
     resetPreferences,

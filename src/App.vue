@@ -15,12 +15,11 @@ import AppSidebar from '@/components/AppSidebar.vue'
 import SettingsPanel from '@/components/SettingsPanel.vue'
 import ClawdBot from '@/components/ClawdBot.vue'
 import InlineNavigation from '@/components/InlineNavigation.vue'
-import { useLayoutConfig, useDisplaySettings } from '@/composables'
+import { useLayoutConfig } from '@/composables'
 import { initPreferencesService } from '@/services/preferencesService'
 
-// Composables - 布局配置和显示设置
+// Composables - 布局配置
 const { showSidebar, sidebarClasses, mainContentClasses } = useLayoutConfig()
-const { applyDisplaySettings } = useDisplaySettings()
 
 // State
 const showSettings = ref(false)
@@ -40,9 +39,6 @@ const handleOpenTerminal = () => {
 onMounted(() => {
   // Initialize preferences service
   initPreferencesService()
-
-  // Apply display settings (animations, transitions, motion preferences)
-  applyDisplaySettings()
 
   console.log('🌷 Spring-themed Operations Assistant Dashboard')
   console.log('🚀 Powered by Vue 3 + TypeScript')

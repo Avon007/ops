@@ -926,11 +926,15 @@ export interface LayoutConfig {
   gapSize: 'small' | 'medium' | 'large'
 }
 
-// 显示配置
-export interface DisplayConfig {
-  animationsEnabled: boolean
-  transitionsEnabled: boolean
-  reduceMotion: boolean
+// 仪表盘配置
+export interface DashboardConfig {
+  showBannerAlert: boolean
+  showMetricCards: boolean
+  showActivityPanel: boolean
+  showTerminal: boolean
+  showPageHeader: boolean
+  enableDraggable: boolean
+  enableResizable: boolean
 }
 
 // 字体配置
@@ -943,7 +947,7 @@ export interface FontConfig {
 // 个性化配置
 export interface UserPreferences {
   layout: LayoutConfig
-  display: DisplayConfig
+  dashboard: DashboardConfig
   font: FontConfig
   language: 'zh-CN' | 'en-US'
   timezone: string

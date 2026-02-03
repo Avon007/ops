@@ -6,7 +6,7 @@
 import type {
   UserPreferences,
   LayoutConfig,
-  DisplayConfig,
+  DashboardConfig,
   FontConfig,
   LayoutMode,
   CardSize
@@ -26,10 +26,14 @@ const defaultPreferences: UserPreferences = {
     cardsPerRow: 3,
     gapSize: 'medium'
   },
-  display: {
-    animationsEnabled: true,
-    transitionsEnabled: true,
-    reduceMotion: false
+  dashboard: {
+    showBannerAlert: true,
+    showMetricCards: true,
+    showActivityPanel: true,
+    showTerminal: true,
+    showPageHeader: true,
+    enableDraggable: true,
+    enableResizable: true
   },
   font: {
     size: 'medium',
@@ -84,7 +88,7 @@ function mergePreferences(
 ): UserPreferences {
   return {
     layout: { ...defaults.layout, ...stored.layout },
-    display: { ...defaults.display, ...stored.display },
+    dashboard: { ...defaults.dashboard, ...stored.dashboard },
     font: { ...defaults.font, ...stored.font },
     language: stored.language || defaults.language,
     timezone: stored.timezone || defaults.timezone,
@@ -110,10 +114,10 @@ export function getLayout(): LayoutConfig {
 }
 
 /**
- * 获取显示配置
+ * 获取仪表盘配置
  */
-export function getDisplay(): DisplayConfig {
-  return { ...currentPreferences.display }
+export function getDashboard(): DashboardConfig {
+  return { ...currentPreferences.dashboard }
 }
 
 /**
@@ -160,16 +164,6 @@ export function toggleSidebar(): void {
 }
 
 /**
- * 设置动画
- */
-export function setAnimations(enabled: boolean): void {
-  currentPreferences.display.animationsEnabled = enabled
-  currentPreferences.display.transitionsEnabled = enabled
-  savePreferences()
-  notifyListeners()
-}
-
-/**
  * 设置字体大小
  */
 export function setFontSize(size: 'small' | 'medium' | 'large' | 'extra-large'): void {
@@ -187,7 +181,7 @@ export function updatePreferences(updates: Partial<UserPreferences>): void {
     ...currentPreferences,
     ...updates,
     layout: { ...currentPreferences.layout, ...updates.layout },
-    display: { ...currentPreferences.display, ...updates.display },
+    dashboard: { ...currentPreferences.dashboard, ...updates.dashboard },
     font: { ...currentPreferences.font, ...updates.font },
     notifications: { ...currentPreferences.notifications, ...updates.notifications },
     dataRefresh: { ...currentPreferences.dataRefresh, ...updates.dataRefresh }

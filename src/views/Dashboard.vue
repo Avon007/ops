@@ -21,7 +21,7 @@ import BannerAlert from '@/components/BannerAlert.vue'
 import DeployModal from '@/components/DeployModal.vue'
 
 // Composables
-import { useRefresh, useDeployment, useLayoutConfig } from '@/composables'
+import { useRefresh, useDeployment, useLayoutConfig, useDashboardSettings } from '@/composables'
 
 // Stores
 import { useDashboardStore } from '@/stores/dashboard'
@@ -50,13 +50,22 @@ const {
 
 const { layoutClasses, metricsGridStyle, cardSize } = useLayoutConfig()
 
+// Dashboard Settings
+const {
+  bannerAlertVisible,
+  metricCardsVisible,
+  activityPanelVisible,
+  terminalVisible,
+  pageHeaderVisible,
+  draggableEnabled,
+  resizableEnabled
+} = useDashboardSettings()
+
 // Computed
 const metrics = computed(() => dashboardStore.metrics)
 const bannerVisible = computed(() => dashboardStore.bannerVisible)
 
 // Interactive Features State
-const enableDraggable = ref(true)
-const enableResizable = ref(true)
 const draggedMetric = ref<string | null>(null)
 
 // Methods
@@ -124,6 +133,7 @@ const handleTerminalResizeEnd = () => {
     <main class="main-content">
       <!-- Page Header -->
       <page-header
+        v-if="pageHeaderVisible"
         title="运维监控中心"
         subtitle="实时监控系统状态 · 自动告警响应 · 快速故障排查"
         :is-refreshing="isRefreshing"
@@ -134,18 +144,19 @@ const handleTerminalResizeEnd = () => {
 
       <!-- Banner Alert -->
       <BannerAlert
+        v-if="bannerAlertVisible"
         :visible="bannerVisible"
         @dismiss="handleDismissBanner"
       />
 
       <!-- Metric Cards -->
-      <div class="metrics-row" :style="metricsGridStyle">
+      <div v-if="metricCardsVisible" class="metrics-row" :style="metricsGridStyle">
         <metric-card
           v-for="metric in metrics"
           :key="metric.label"
           v-bind="metric"
           :size="cardSize"
-          :draggable="enableDraggable"
+          :draggable="draggableEnabled"
           @drag-start="() => handleMetricDragStart(metric.label)"
           @drag-end="handleMetricDragEnd"
         />
@@ -154,9 +165,9 @@ const handleTerminalResizeEnd = () => {
       <!-- Main Content Area with Terminal and Right Panel -->
       <div class="main-area">
         <!-- Terminal (Center) -->
-        <div class="terminal-section">
+        <div v-if="terminalVisible" class="terminal-section">
           <Terminal
-            :resizable="enableResizable"
+            :resizable="resizableEnabled"
             @resize="handleTerminalResize"
             @resize-start="handleTerminalResizeStart"
             @resize-end="handleTerminalResizeEnd"
@@ -164,9 +175,9 @@ const handleTerminalResizeEnd = () => {
         </div>
 
         <!-- Right Panel (Activity) -->
-        <div class="right-panel">
+        <div v-if="activityPanelVisible" class="right-panel">
           <activity-panel
-            :resizable="enableResizable"
+            :resizable="resizableEnabled"
             @resize="handleActivityResize"
             @resize-start="handleActivityResizeStart"
             @resize-end="handleActivityResizeEnd"

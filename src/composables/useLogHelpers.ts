@@ -102,14 +102,14 @@ export function useLogHelpers() {
    * Get all available log levels
    */
   const getLogLevels = (): string[] => {
-    return ['All', 'Error', 'Warning', 'Info', 'Debug']
+    return ['全部', '错误', '警告', '信息', '调试']
   }
 
   /**
    * Get time range options
    */
   const getTimeRanges = (): string[] => {
-    return ['Last 15m', 'Last 1h', 'Last 24h', 'Last 7d', 'Custom']
+    return ['最近15分钟', '最近1小时', '最近24小时', '最近7天', '自定义']
   }
 
   /**

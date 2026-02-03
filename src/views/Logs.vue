@@ -51,14 +51,14 @@ const {
 
 // State
 const logLevels = ref(getLogLevels())
-const selectedLevel = ref('All')
+const selectedLevel = ref('全部')
 const searchQuery = ref('')
-const selectedTimeRange = ref('Last 24h')
+const selectedTimeRange = ref('最近24小时')
 
 // Computed
 const filteredLogs = computed(() => {
   return logsStore.logs.filter(log => {
-    const matchesLevel = selectedLevel.value === 'All' || log.level === selectedLevel.value.toLowerCase()
+    const matchesLevel = selectedLevel.value === '全部' || log.level === selectedLevel.value.toLowerCase()
     const matchesSearch = searchQuery.value === '' ||
       log.message.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       log.service.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -74,9 +74,9 @@ const goToDashboard = () => {
 }
 
 const clearFilters = () => {
-  selectedLevel.value = 'All'
+  selectedLevel.value = '全部'
   searchQuery.value = ''
-  selectedTimeRange.value = 'Last 24h'
+  selectedTimeRange.value = '最近24小时'
 }
 
 const refreshLogs = async () => {
@@ -121,19 +121,19 @@ const viewLogDetails = (logId: number) => {
     <!-- Stats Cards -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Total Logs</div>
+        <div class="stat-label">总日志数</div>
         <div class="stat-value">{{ stats.total }}</div>
       </div>
       <div class="stat-card stat-error">
-        <div class="stat-label">Errors</div>
+        <div class="stat-label">错误</div>
         <div class="stat-value">{{ stats.errors }}</div>
       </div>
       <div class="stat-card stat-warning">
-        <div class="stat-label">Warnings</div>
+        <div class="stat-label">警告</div>
         <div class="stat-value">{{ stats.warnings }}</div>
       </div>
       <div class="stat-card stat-info">
-        <div class="stat-label">Info</div>
+        <div class="stat-label">信息</div>
         <div class="stat-value">{{ stats.info }}</div>
       </div>
     </div>
@@ -145,7 +145,7 @@ const viewLogDetails = (logId: number) => {
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search logs..."
+          placeholder="搜索日志..."
           class="search-input"
         />
       </div>

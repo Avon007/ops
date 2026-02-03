@@ -24,6 +24,7 @@ export { useSkillCategories } from './useSkillCategories'
 // Settings
 export { useSettingsDialog } from './useSettingsDialog'
 export { useSettingsOptions } from './useSettingsOptions'
+export { useDisplaySettings } from './useDisplaySettings'
 
 // ClawdBot
 export { useChatState } from './useChatState'

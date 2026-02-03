@@ -17,7 +17,7 @@ const STORAGE_KEY = 'ops-assistant-preferences'
 // 默认配置
 const defaultPreferences: UserPreferences = {
   layout: {
-    mode: 'default',
+    mode: 'sidebar-left',
     sidebarWidth: 260,
     sidebarCollapsed: false,
     showHeader: true,
@@ -27,14 +27,9 @@ const defaultPreferences: UserPreferences = {
     gapSize: 'medium'
   },
   display: {
-    showSystemStatus: true,
-    showMetrics: true,
-    showCharts: true,
-    showLogs: true,
-    showAlerts: true,
-    compactMode: false,
     animationsEnabled: true,
-    transitionsEnabled: true
+    transitionsEnabled: true,
+    reduceMotion: false
   },
   font: {
     size: 'medium',
@@ -160,15 +155,6 @@ export function setCardsPerRow(count: number): void {
  */
 export function toggleSidebar(): void {
   currentPreferences.layout.sidebarCollapsed = !currentPreferences.layout.sidebarCollapsed
-  savePreferences()
-  notifyListeners()
-}
-
-/**
- * 设置紧凑模式
- */
-export function setCompactMode(enabled: boolean): void {
-  currentPreferences.display.compactMode = enabled
   savePreferences()
   notifyListeners()
 }

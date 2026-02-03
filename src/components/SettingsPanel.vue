@@ -9,7 +9,7 @@ import {
   Check
 } from 'lucide-vue-next'
 import { useSettingsStore } from '@/stores/settings'
-import { useSettingsDialog, useSettingsOptions } from '@/composables'
+import { useSettingsDialog, useSettingsOptions, useDisplaySettings } from '@/composables'
 import type { LayoutMode, CardSize } from '@/types'
 
 // Props
@@ -26,6 +26,7 @@ const emit = defineEmits<{
 const settingsStore = useSettingsStore()
 const { activeTab, saveStatus, showSaved, setActiveTab } = useSettingsDialog()
 const { layoutOptions, cardSizeOptions, fontSizeOptions, tabs } = useSettingsOptions()
+const { setAnimations, setTransitions, setReduceMotion } = useDisplaySettings()
 
 // Local state
 const importInput = ref<HTMLInputElement>()
@@ -51,29 +52,24 @@ const handleCardsPerRowChange = (count: number) => {
   showSaved()
 }
 
-const handleCompactModeToggle = () => {
-  settingsStore.setCompactMode(!settingsStore.isCompactMode)
+const handleAnimationsToggle = () => {
+  setAnimations(!settingsStore.preferences.display.animationsEnabled)
   showSaved()
 }
 
-const handleAnimationsToggle = () => {
-  settingsStore.setAnimations(!settingsStore.animationsEnabled)
+const handleTransitionsToggle = () => {
+  setTransitions(!settingsStore.preferences.display.transitionsEnabled)
+  showSaved()
+}
+
+const handleReduceMotionToggle = () => {
+  setReduceMotion(!settingsStore.preferences.display.reduceMotion)
   showSaved()
 }
 
 const handleFontSizeChange = (size: 'small' | 'medium' | 'large' | 'extra-large') => {
   settingsStore.setFontSize(size)
   showSaved()
-}
-
-const handleShowElementToggle = (key: keyof typeof settingsStore.preferences.display) => {
-  if (key.startsWith('show')) {
-    const newValue = !settingsStore.preferences.display[key]
-    settingsStore.updatePreferences({
-      display: { ...settingsStore.preferences.display, [key]: newValue }
-    })
-    showSaved()
-  }
 }
 
 const handleNotificationToggle = (key: keyof typeof settingsStore.preferences.notifications) => {
@@ -238,68 +234,36 @@ onMounted(() => {
 
           <!-- Display Tab -->
           <div v-if="activeTab === 'display'" class="tab-content">
-            <h3>显示元素</h3>
+            <h3>动画与过渡效果</h3>
             <div class="settings-list">
               <label class="setting-item">
                 <input
                   type="checkbox"
-                  :checked="settingsStore.preferences.display.showSystemStatus"
-                  @change="handleShowElementToggle('showSystemStatus')"
-                />
-                <span>显示系统状态</span>
-              </label>
-              <label class="setting-item">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.preferences.display.showMetrics"
-                  @change="handleShowElementToggle('showMetrics')"
-                />
-                <span>显示性能指标</span>
-              </label>
-              <label class="setting-item">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.preferences.display.showCharts"
-                  @change="handleShowElementToggle('showCharts')"
-                />
-                <span>显示图表</span>
-              </label>
-              <label class="setting-item">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.preferences.display.showLogs"
-                  @change="handleShowElementToggle('showLogs')"
-                />
-                <span>显示日志</span>
-              </label>
-              <label class="setting-item">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.preferences.display.showAlerts"
-                  @change="handleShowElementToggle('showAlerts')"
-                />
-                <span>显示告警</span>
-              </label>
-            </div>
-
-            <h3>显示模式</h3>
-            <div class="settings-list">
-              <label class="setting-item">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.isCompactMode"
-                  @change="handleCompactModeToggle"
-                />
-                <span>紧凑模式</span>
-              </label>
-              <label class="setting-item">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.animationsEnabled"
+                  :checked="settingsStore.preferences.display.animationsEnabled"
                   @change="handleAnimationsToggle"
                 />
                 <span>启用动画</span>
               </label>
+              <label class="setting-item">
+                <input
+                  type="checkbox"
+                  :checked="settingsStore.preferences.display.transitionsEnabled"
+                  @change="handleTransitionsToggle"
+                />
+                <span>启用过渡效果</span>
+              </label>
+              <label class="setting-item">
+                <input
+                  type="checkbox"
+                  :checked="settingsStore.preferences.display.reduceMotion"
+                  @change="handleReduceMotionToggle"
+                />
+                <span>减少动效</span>
+              </label>
+            </div>
+
+            <div class="info-box">
+              <p>当启用"减少动效"时，将禁用所有动画和过渡效果，提供更简洁的用户体验。此设置有助于提高性能和可访问性。</p>
             </div>
           </div>
 
@@ -703,6 +667,22 @@ onMounted(() => {
   margin: 0;
   line-height: var(--line-height);
   color: var(--text-main);
+}
+
+/* Info Box */
+.info-box {
+  padding: var(--spacing-md);
+  background: #eff6ff;
+  border-radius: var(--border-radius);
+  border: 1px solid #bfdbfe;
+  margin-top: var(--spacing-lg);
+}
+
+.info-box p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #1e40af;
 }
 
 /* Data Actions */

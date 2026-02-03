@@ -12,7 +12,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import type { UserPreferences, LayoutMode, CardSize } from '@/types'
-import { DEFAULT_LAYOUT_MODE, DEFAULT_CARD_SIZE } from '@/constants'
+import { DEFAULT_LAYOUT_MODE, DEFAULT_CARD_SIZE, DEFAULT_DISPLAY_SETTINGS } from '@/constants'
 
 const STORAGE_KEY = 'ops-assistant-preferences'
 
@@ -28,16 +28,7 @@ const defaultPreferences: UserPreferences = {
     cardsPerRow: 3,
     gapSize: 'medium'
   },
-  display: {
-    showSystemStatus: true,
-    showMetrics: true,
-    showCharts: true,
-    showLogs: true,
-    showAlerts: true,
-    compactMode: false,
-    animationsEnabled: true,
-    transitionsEnabled: true
-  },
+  display: DEFAULT_DISPLAY_SETTINGS,
   font: {
     size: 'medium',
     family: "'Inter', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif",
@@ -67,7 +58,6 @@ export const useSettingsStore = defineStore('settings', () => {
   const layoutMode = computed(() => preferences.value.layout.mode)
   const cardSize = computed(() => preferences.value.layout.cardSize)
   const fontSize = computed(() => preferences.value.font.size)
-  const isCompactMode = computed(() => preferences.value.display.compactMode)
   const animationsEnabled = computed(() => preferences.value.display.animationsEnabled)
 
   // Actions
@@ -112,15 +102,11 @@ export const useSettingsStore = defineStore('settings', () => {
     savePreferences()
   }
 
-  const setCompactMode = (enabled: boolean) => {
-    preferences.value.display.compactMode = enabled
-    savePreferences()
-  }
-
   const setAnimations = (enabled: boolean) => {
     preferences.value.display.animationsEnabled = enabled
     preferences.value.display.transitionsEnabled = enabled
     savePreferences()
+    applyFontSettings()
   }
 
   const setFontSize = (size: 'small' | 'medium' | 'large' | 'extra-large') => {
@@ -224,7 +210,6 @@ export const useSettingsStore = defineStore('settings', () => {
     layoutMode,
     cardSize,
     fontSize,
-    isCompactMode,
     animationsEnabled,
     // Actions
     loadPreferences,
@@ -233,7 +218,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setCardSize,
     setCardsPerRow,
     toggleSidebar,
-    setCompactMode,
     setAnimations,
     setFontSize,
     updatePreferences,

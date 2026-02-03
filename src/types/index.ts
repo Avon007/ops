@@ -928,14 +928,9 @@ export interface LayoutConfig {
 
 // 显示配置
 export interface DisplayConfig {
-  showSystemStatus: boolean
-  showMetrics: boolean
-  showCharts: boolean
-  showLogs: boolean
-  showAlerts: boolean
-  compactMode: boolean
   animationsEnabled: boolean
   transitionsEnabled: boolean
+  reduceMotion: boolean
 }
 
 // 字体配置

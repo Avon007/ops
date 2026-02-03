@@ -641,3 +641,66 @@ button {
 .h-full {
   height: 100%;
 }
+
+/* ==================== MOTION CONTROL ==================== */
+/**
+ * 全局动画和过渡控制
+ * 通过 useDisplaySettings composable 管理
+ * 当用户禁用动画或减少动效时应用这些样式
+ */
+
+/* 禁用动画 */
+.no-animations *,
+.no-animations *::before,
+.no-animations *::after {
+  animation: none !important;
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  animation-timing-function: linear !important;
+}
+
+/* 禁用过渡效果 */
+.no-transitions *,
+.no-transitions *::before,
+.no-transitions *::after {
+  transition: none !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  transition-timing-function: linear !important;
+}
+
+/* 减少动效（禁用动画和过渡） */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* 响应式设计：尊重用户系统的动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* CSS 变量控制（通过 useDisplaySettings 动态设置） */
+:root {
+  --animations-enabled: 1;
+  --transitions-enabled: 1;
+}
+
+/* 当禁用动画时 */
+:root[style*="--animations-enabled: 0"] * {
+  animation: none !important;
+}
+
+/* 当禁用过渡时 */
+:root[style*="--transitions-enabled: 0"] * {
+  transition: none !important;
+}

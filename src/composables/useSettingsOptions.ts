@@ -4,7 +4,7 @@
  */
 
 import { computed } from 'vue'
-import { Layout, Monitor, Type } from 'lucide-vue-next'
+import { Layout, Monitor, Type, PanelLeftClose, X } from 'lucide-vue-next'
 import type { LayoutMode, CardSize } from '@/types'
 
 export function useSettingsOptions() {
@@ -14,13 +14,13 @@ export function useSettingsOptions() {
       value: 'default' as LayoutMode,
       name: '默认布局',
       icon: Layout,
-      description: '标准的三栏布局'
+      description: '标准布局，左侧边栏'
     },
     {
       value: 'compact' as LayoutMode,
       name: '紧凑布局',
       icon: Monitor,
-      description: '更紧凑的卡片排列'
+      description: '更紧凑的间距和内边距'
     },
     {
       value: 'spacious' as LayoutMode,
@@ -31,14 +31,20 @@ export function useSettingsOptions() {
     {
       value: 'sidebar-left' as LayoutMode,
       name: '左侧边栏',
-      icon: Layout,
-      description: '侧边栏在左侧'
+      icon: PanelLeftClose,
+      description: '侧边栏固定在左侧'
     },
     {
       value: 'sidebar-right' as LayoutMode,
       name: '右侧边栏',
       icon: Layout,
-      description: '侧边栏在右侧'
+      description: '侧边栏固定在右侧'
+    },
+    {
+      value: 'no-sidebar' as LayoutMode,
+      name: '无边栏',
+      icon: X,
+      description: '隐藏侧边栏，最大化内容区'
     }
   ])
 
